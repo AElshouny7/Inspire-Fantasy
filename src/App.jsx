@@ -1,12 +1,12 @@
 // App.jsx
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Registration from './components/Registration';
-import Home from './components/Home';
-import PlayerList from './components/PlayerList';
+import { useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import "./App.css";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Registration from "@/components/Registration";
+import Home from "@/components/Home";
+import PlayerList from "@/components/PlayerList";
 
 function App() {
   return (
@@ -21,8 +21,6 @@ function App() {
 }
 
 export default App;
-
-
 
 // import { useState } from 'react'
 // import reactLogo from './assets/react.svg'
