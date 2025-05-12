@@ -26,9 +26,9 @@ export default function PlayerList() {
     fetchPlayers();
   }, []);
 
-  const filteredPlayers = allPlayers.filter((p) => {
-    if (filter === "gk") return p.isGK;
-    if (filter === "outfield") return !p.isGK;
+  const filteredPlayers = allPlayers.filter((player) => {
+    if (filter === "gk") return player.position === 'GK';
+    if (filter === "outfield") return player.position !== 'GK';
     return true;
   });
 
