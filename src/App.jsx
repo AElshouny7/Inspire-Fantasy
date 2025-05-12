@@ -7,6 +7,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Registration from "@/components/Registration";
 import Home from "@/components/Home";
 import PlayerList from "@/components/PlayerList";
+import Leaderboard from "@/components/Leaderboard";
+
 
 function App() {
   return (
