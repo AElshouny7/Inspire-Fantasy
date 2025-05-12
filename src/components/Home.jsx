@@ -83,10 +83,12 @@ export default function Home() {
     <div className="min-h-screen bg-gray-100 p-4">
       <header className="flex flex-col mb-4 text-sm text-gray-700">
         <div className="flex justify-between mb-1">
-          <span>Total Points: {totalPoints} <br />
-          Round Points: {roundPoints}</span>
+          <span>
+            Total Points: {totalPoints} <br />
+            Round Points: {roundPoints}
+          </span>
           <span>Round: {roundName}</span> <br />
-          <span>Transfer: 0 </span>   
+          <span>Transfer: 0 </span>
         </div>
         <div className="text-center font-semibold">
           Captain: <span className="text-blue-700">{captainName}</span>
@@ -104,14 +106,16 @@ export default function Home() {
             <Card
               key={index}
               className={`h-24 flex items-center justify-center cursor-pointer border-2 ${
-                mode === 'captain' || mode === 'transfer'
-                  ? 'border-blue-400'
-                  : 'border-dashed border-gray-300'
-              } ${index === captainIndex ? 'bg-yellow-100' : ''}`}
+                mode === "captain" || mode === "transfer"
+                  ? "border-blue-400"
+                  : "border-dashed border-gray-300"
+              } ${index === captainIndex ? "bg-yellow-100" : ""}`}
               onClick={() => handleCardClick(index)}
             >
               {player ? (
-                  <span>{player.name} <br /> {player.team} <br /> {player.roundPoints} </span>
+                <span>
+                  {player.name} <br /> {player.team} <br /> {player.roundPoints}{" "}
+                </span>
               ) : (
                 <span className="text-2xl text-gray-400">+</span>
               )}
@@ -127,14 +131,17 @@ export default function Home() {
               <Card
                 key={actualIndex}
                 className={`h-24 flex items-center justify-center cursor-pointer border-2 ${
-                  mode === 'captain' || mode === 'transfer'
-                    ? 'border-blue-400'
-                    : 'border-dashed border-gray-300'
-                } ${actualIndex === captainIndex ? 'bg-yellow-100' : ''}`}
+                  mode === "captain" || mode === "transfer"
+                    ? "border-blue-400"
+                    : "border-dashed border-gray-300"
+                } ${actualIndex === captainIndex ? "bg-yellow-100" : ""}`}
                 onClick={() => handleCardClick(actualIndex)}
               >
                 {player ? (
-                  <span>{player.name} <br /> {player.team} <br /> {player.roundPoints} </span>
+                  <span>
+                    {player.name} <br /> {player.team} <br />{" "}
+                    {player.roundPoints}{" "}
+                  </span>
                 ) : (
                   <span className="text-2xl text-gray-400">+</span>
                 )}
@@ -148,22 +155,25 @@ export default function Home() {
           {players[4] && (
             <Card
               className={`h-24 w-1/2 flex items-center justify-center cursor-pointer border-2 ${
-                mode === 'captain' || mode === 'transfer'
-                  ? 'border-blue-400'
-                  : 'border-dashed border-gray-300'
-              } ${4 === captainIndex ? 'bg-yellow-100' : ''}`}
+                mode === "captain" || mode === "transfer"
+                  ? "border-blue-400"
+                  : "border-dashed border-gray-300"
+              } ${4 === captainIndex ? "bg-yellow-100" : ""}`}
               onClick={() => handleCardClick(4)}
             >
-                  <span>{player[4].name} <br /> {player[4].team} <br /> {player[4].roundPoints} </span>
-                  </Card>
+              <span>
+                {player[4].name} <br /> {player[4].team} <br />{" "}
+                {player[4].roundPoints}{" "}
+              </span>
+            </Card>
           )}
           {!players[4] && (
             <Card
               className={`h-24 w-1/2 flex items-center justify-center cursor-pointer border-2 ${
-                mode === 'captain' || mode === 'transfer'
-                  ? 'border-blue-400'
-                  : 'border-dashed border-gray-300'
-              } ${4 === captainIndex ? 'bg-yellow-100' : ''}`}
+                mode === "captain" || mode === "transfer"
+                  ? "border-blue-400"
+                  : "border-dashed border-gray-300"
+              } ${4 === captainIndex ? "bg-yellow-100" : ""}`}
               onClick={() => handleCardClick(4)}
             >
               <span className="text-2xl text-gray-400">+</span>
@@ -181,14 +191,17 @@ export default function Home() {
                 <Card
                   key={actualIndex}
                   className={`h-24 flex items-center justify-center cursor-pointer border-2 ${
-                    mode === 'captain' || mode === 'transfer'
-                      ? 'border-blue-400'
-                      : 'border-dashed border-gray-300'
-                  } ${actualIndex === captainIndex ? 'bg-yellow-100' : ''}`}
+                    mode === "captain" || mode === "transfer"
+                      ? "border-blue-400"
+                      : "border-dashed border-gray-300"
+                  } ${actualIndex === captainIndex ? "bg-yellow-100" : ""}`}
                   onClick={() => handleCardClick(actualIndex)}
                 >
                   {player ? (
-                  <span>{player.name} <br /> {player.team} <br /> {player.roundPoints} </span>
+                    <span>
+                      {player.name} <br /> {player.team} <br />{" "}
+                      {player.roundPoints}{" "}
+                    </span>
                   ) : (
                     <span className="text-2xl text-gray-400">+</span>
                   )}
@@ -211,8 +224,7 @@ export default function Home() {
         >
           Transfer
         </Button>
-        <Button onClick={() => navigate('/leaderboard')}>Leaderboard</Button>
-
+        <Button onClick={() => navigate("/leaderboard")}>Leaderboard</Button>
       </div>
     </div>
   );
