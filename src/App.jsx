@@ -1,4 +1,3 @@
-// App.jsx
 import { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
@@ -12,19 +11,24 @@ import PlayerList from "@/components/PlayerList";
 import Leaderboard from "@/components/Leaderboard";
 
 function App() {
-  const [initialRoute, setInitialRoute] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [checkedStorage, setCheckedStorage] = useState(false);
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    setInitialRoute(userId ? "/home" : "/");
+    const storedId = localStorage.getItem("userId");
+    setUserId(storedId);
+    setCheckedStorage(true);
   }, []);
 
-  if (initialRoute === null) return null; // wait for localStorage check
+  if (!checkedStorage) return null; // wait for localStorage check
 
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to={initialRoute} />} />
+        <Route
+          path="/"
+          element={userId ? <Navigate to="/home" /> : <Registration />}
+        />
         <Route path="/home" element={<Home />} />
         <Route path="/players" element={<PlayerList />} />
         <Route path="/leaderboard" element={<Leaderboard />} />

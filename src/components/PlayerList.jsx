@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
+
+import { toast } from "sonner";
+
 import { callBackend } from "@/lib/api";
 
 export default function PlayerList() {
@@ -19,7 +22,10 @@ export default function PlayerList() {
     async function fetchPlayers() {
       const res = await callBackend("viewAllPlayers");
       if (res.status === "success") {
+        console.log(res.players);
         setAllPlayers(res.players);
+      } else {
+        toast.error(res.message);
       }
     }
 
@@ -27,8 +33,8 @@ export default function PlayerList() {
   }, []);
 
   const filteredPlayers = allPlayers.filter((player) => {
-    if (filter === "gk") return player.position === 'GK';
-    if (filter === "outfield") return player.position !== 'GK';
+    if (filter === "gk") return player.position === "GK";
+    if (filter === "outfield") return player.position !== "GK";
     return true;
   });
 
@@ -53,7 +59,7 @@ export default function PlayerList() {
         newPlayers[transferIndex] = player;
         navigate("/home", { state: { updatedPlayers: newPlayers } });
       } else {
-        alert(response.message);
+        toast.error(response.message);
       }
     } else {
       // Add mode: use position to determine GK/Sub/Outfield
@@ -72,7 +78,7 @@ export default function PlayerList() {
         newPlayers[transferIndex] = player;
         navigate("/home", { state: { updatedPlayers: newPlayers } });
       } else {
-        alert(response.message);
+        toast.error(response.message);
       }
     }
   };
