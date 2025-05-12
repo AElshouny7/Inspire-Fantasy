@@ -42,36 +42,33 @@ export default function Home() {
     fetchData();
   }, [location.state?.updatedPlayers]);
 
-  const handleCardClick = async (index) => {
-    if (!userId) return;
-
-    if (mode === "transfer") {
+  const handleCardClick = (index) => {
+    let filter = null;
+  
+    if ([0, 1, 2, 3].includes(index)) {
+      filter = 'outfield';
+    } else if (index === 4) {
+      filter = 'gk';
+    } else {
+      filter = 'all';
+    }
+  
+    if (mode === 'transfer') {
       setTransferIndex(index);
-      navigate("/players", {
-        state: {
-          selectedPlayers: players,
-          transferIndex: index,
-          mode: "transfer",
-        },
+      navigate('/players', {
+        state: { selectedPlayers: players, transferIndex: index, filter }
       });
-    } else if (mode === "captain") {
+    } else if (mode === 'captain') {
       setCaptainIndex(index);
       setMode(null);
-      await callBackend("selectCaptain", {
-        userId,
-        captainId: players[index].id,
-      });
     } else {
       setTransferIndex(index);
-      navigate("/players", {
-        state: {
-          selectedPlayers: players,
-          transferIndex: index,
-          mode: "add",
-        },
+      navigate('/players', {
+        state: { selectedPlayers: players, transferIndex: index, filter }
       });
     }
   };
+  
 
   const toggleMode = (selectedMode) => {
     setMode(mode === selectedMode ? null : selectedMode);
