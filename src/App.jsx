@@ -16,7 +16,7 @@ function App() {
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
-    setInitialRoute(userId ? "/home" : "/");
+    setInitialRoute(userId ? "/home" : "/register");
   }, []);
 
   if (initialRoute === null) return null; // wait for localStorage check
@@ -25,6 +25,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Navigate to={initialRoute} />} />
+        <Route path="/register" element={<Registration />} />
         <Route path="/home" element={<Home />} />
         <Route path="/players" element={<PlayerList />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
