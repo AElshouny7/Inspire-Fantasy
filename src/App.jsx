@@ -25,7 +25,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to={initialRoute} />} />
+        <Route
+          path="/"
+          element={userId ? <Navigate to="/home" /> : <Registration />}
+        />
         <Route path="/home" element={<Home />} />
         <Route path="/players" element={<PlayerList />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
