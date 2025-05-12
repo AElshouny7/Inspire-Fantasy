@@ -1,8 +1,9 @@
 // components/Home.jsx
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+
 import { callBackend } from "@/lib/api";
 
 const initialPlayers = Array(7).fill(null);
@@ -19,30 +20,29 @@ export default function Home() {
   const [userName, setUserName] = useState("");
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const userId = localStorage.getItem("userId");
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    if (!userId) return;
+    async function fetchData() {
+      if (!userId) return;
 
-    async function fetchPlayers() {
       const res = await callBackend("viewMyPlayers", { userId });
       if (res.status === "success") {
         setPlayers(res.players);
-        const captainIdx = res.players.findIndex((p) => p.isCaptain);
-        setCaptainIndex(captainIdx);
-        setRoundName(res.round);
-        setTotalPoints(res.totalPoints);
-        setRoundPoints(res.roundPoints);
-        setTeamName(res.teamName);
-        setUserName(res.name);
+        setCaptainIndex(res.players.findIndex((p) => p.isCaptain));
+        setTotalPoints(res.totalPoints || 0);
+        setRoundPoints(res.roundPoints || 0);
+        setRoundName(res.round || "N/A");
+        setTeamName(res.teamName || "");
+        setUserName(res.name || "");
       }
     }
 
-    fetchPlayers();
-  }, []);
+    fetchData();
+  }, [location.state?.updatedPlayers]);
 
   const handleCardClick = async (index) => {
-    const userId = localStorage.getItem("userId");
     if (!userId) return;
 
     if (mode === "transfer") {
@@ -67,7 +67,7 @@ export default function Home() {
         state: {
           selectedPlayers: players,
           transferIndex: index,
-          mode: null, // explicitly set null
+          mode: "add",
         },
       });
     }

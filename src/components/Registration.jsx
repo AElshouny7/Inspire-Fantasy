@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+import { toast } from "sonner";
+
 import { callBackend } from "../lib/api";
 
 export default function Registration() {
@@ -23,9 +25,10 @@ export default function Registration() {
     if (response.status === "success") {
       localStorage.setItem("userId", response.userId);
       localStorage.setItem("teamName", teamName);
+      toast.success("Registration successful!");
       navigate("/home", { state: { userId: response.userId } });
     } else {
-      // Handle error
+      toast.error(response.message);
     }
   };
 

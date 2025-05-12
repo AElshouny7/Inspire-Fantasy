@@ -1,3 +1,4 @@
+// components/PlayerList.jsx
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -8,11 +9,11 @@ export default function PlayerList() {
   const location = useLocation();
   const selectedPlayers = location.state?.selectedPlayers || [];
   const transferIndex = location.state?.transferIndex;
+  const mode = location.state?.mode; // 'transfer' or 'add'
   const userId = localStorage.getItem("userId");
-  const mode = location.state?.mode; // 'transfer' or null
 
-  const [filter, setFilter] = useState("all");
   const [allPlayers, setAllPlayers] = useState([]);
+  const [filter, setFilter] = useState("all"); // "all", "gk", "outfield"
 
   useEffect(() => {
     async function fetchPlayers() {
@@ -21,6 +22,7 @@ export default function PlayerList() {
         setAllPlayers(res.players);
       }
     }
+
     fetchPlayers();
   }, []);
 
@@ -34,12 +36,11 @@ export default function PlayerList() {
     selectedPlayers.some((p) => p?.id === player.id);
 
   const handleSelect = async (player) => {
-    if (isPlayerSelected(player)) return;
+    if (!userId || isPlayerSelected(player)) return;
 
     const outId = selectedPlayers[transferIndex]?.id;
     const inId = player.id;
 
-    // If in transfer mode
     if (mode === "transfer") {
       const response = await callBackend("transferPlayer", {
         userId,
@@ -54,48 +55,32 @@ export default function PlayerList() {
       } else {
         alert(response.message);
       }
-      return;
-    }
-
-    // Otherwise, it's an add flow (initial team building)
-    const newPlayers = [...selectedPlayers];
-
-    // Decide where to add the new player
-    if (transferIndex === 4) {
-      // GK position
-      await callBackend("addPlayerToTeam", {
-        userId,
-        playerId: inId,
-        isSub: false,
-        isGK: true,
-      });
-    } else if (transferIndex >= 5) {
-      // Substitutes
-      await callBackend("addPlayerToTeam", {
-        userId,
-        playerId: inId,
-        isSub: true,
-        isGK: false,
-      });
     } else {
-      // Outfield
-      await callBackend("addPlayerToTeam", {
+      // Add mode: use position to determine GK/Sub/Outfield
+      const isSub = transferIndex >= 5;
+      const isGK = transferIndex === 4;
+
+      const response = await callBackend("addPlayerToTeam", {
         userId,
         playerId: inId,
-        isSub: false,
-        isGK: false,
+        isSub,
+        isGK,
       });
-    }
 
-    newPlayers[transferIndex] = player;
-    navigate("/home", { state: { updatedPlayers: newPlayers } });
+      if (response.status === "success") {
+        const newPlayers = [...selectedPlayers];
+        newPlayers[transferIndex] = player;
+        navigate("/home", { state: { updatedPlayers: newPlayers } });
+      } else {
+        alert(response.message);
+      }
+    }
   };
 
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">All Players</h2>
 
-      {/* Filter buttons */}
       <div className="flex gap-2 mb-4">
         <button
           className={`px-4 py-1 rounded ${
