@@ -1,26 +1,26 @@
-// components/Registration.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
 import { toast } from "sonner";
-
 import { callBackend } from "../lib/api";
 
 export default function Registration() {
   const [username, setUsername] = useState("");
   const [teamName, setTeamName] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // prevent double submit
+    setLoading(true);
+
     const response = await callBackend("registerUser", {
       name: username,
       teamName,
     });
-    console.log(response);
 
     if (response.status === "success") {
       localStorage.setItem("userId", response.userId);
@@ -30,6 +30,8 @@ export default function Registration() {
     } else {
       toast.error(response.message);
     }
+
+    setLoading(false); // re-enable only if you want retry on failure
   };
 
   return (
@@ -50,8 +52,19 @@ export default function Registration() {
               onChange={(e) => setTeamName(e.target.value)}
               required
             />
-            <Button type="submit" className="w-full">
-              Register
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
+                  Registering...
+                </div>
+              ) : (
+                "Register"
+              )}
             </Button>
           </form>
         </CardContent>
