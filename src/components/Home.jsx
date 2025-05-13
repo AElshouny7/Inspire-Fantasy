@@ -111,7 +111,7 @@ export default function Home() {
       </header>
 
       <h1 className="text-center text-xl font-bold mb-2">
-        {userName} – {teamName}
+        {userName} - {teamName}
       </h1>
 
       <div className="mb-4 space-y-4">
