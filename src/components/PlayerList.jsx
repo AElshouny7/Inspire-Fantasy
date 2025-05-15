@@ -11,30 +11,35 @@ export default function PlayerList() {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedPlayers = location.state?.selectedPlayers || [];
-  const transferIndex = location.state?.transferIndex;
+  const transferIndex = location.state?.transferIndex ?? 0;
   const mode = location.state?.mode; // 'transfer' or 'add'
   const userId = localStorage.getItem("userId");
 
   const [allPlayers, setAllPlayers] = useState([]);
-  const [filter, setFilter] = useState("all"); // "all", "gk", "outfield"
+  const [filter, setFilter] = useState(location.state?.filter || "all"); // ✅ Correct
 
   useEffect(() => {
     async function fetchPlayers() {
       const res = await callBackend("viewAllPlayers");
       if (res.status === "success") {
-        console.log(res.players);
         setAllPlayers(res.players);
+        console.log("Fetched players:", res.players);
       } else {
         toast.error(res.message);
       }
     }
 
+    // Automatically set filter based on index
+    if (transferIndex <= 3) setFilter("outfield");
+    else if (transferIndex === 4) setFilter("gk");
+    else setFilter("all");
+
     fetchPlayers();
   }, []);
 
   const filteredPlayers = allPlayers.filter((player) => {
-    if (filter === "gk") return player.position === "GK";
-    if (filter === "outfield") return player.position !== "GK";
+    if (filter === "gk") return player.isGK === true;
+    if (filter === "outfield") return player.isGK === false;
     return true;
   });
 
@@ -62,7 +67,6 @@ export default function PlayerList() {
         toast.error(response.message);
       }
     } else {
-
       const isSub = transferIndex >= 5;
       const isGK = transferIndex === 4;
 
@@ -86,33 +90,6 @@ export default function PlayerList() {
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">All Players</h2>
-
-      <div className="flex gap-2 mb-4">
-        <button
-          className={`px-4 py-1 rounded ${
-            filter === "all" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-          onClick={() => setFilter("all")}
-        >
-          All
-        </button>
-        <button
-          className={`px-4 py-1 rounded ${
-            filter === "outfield" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-          onClick={() => setFilter("outfield")}
-        >
-          Outfield
-        </button>
-        <button
-          className={`px-4 py-1 rounded ${
-            filter === "gk" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-          onClick={() => setFilter("gk")}
-        >
-          Goalkeepers
-        </button>
-      </div>
 
       <div className="grid grid-cols-2 gap-2">
         {filteredPlayers.map((player) => (

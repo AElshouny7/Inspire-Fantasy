@@ -17,9 +17,11 @@ export default function Home() {
   const [transferIndex, setTransferIndex] = useState(null);
   const [totalPoints, setTotalPoints] = useState(0);
   const [roundPoints, setRoundPoints] = useState(0);
+  const [transfersUsed, setTransfersUsed] = useState(0);
   const [roundName, setRoundName] = useState("");
-  const [teamName, setTeamName] = useState("");
-  const [userName, setUserName] = useState("");
+
+  const teamName = localStorage.getItem("teamName") || "";
+  const userName = localStorage.getItem("name") || "";
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,13 +38,16 @@ export default function Home() {
         console.log("Fetched players: ", res.players);
         toast.success("Fetched players successfully");
 
-        setPlayers(res.players);
+        // Fill missing slots with nulls up to 7
+        const paddedPlayers = [...res.players];
+        while (paddedPlayers.length < 7) paddedPlayers.push(null);
+        setPlayers(paddedPlayers);
+
         setCaptainIndex(res.players.findIndex((p) => p.isCaptain));
         setTotalPoints(res.totalPoints || 0);
         setRoundPoints(res.roundPoints || 0);
+        setTransfersUsed(res.transfersUsed || 0);
         setRoundName(res.round || "N/A");
-        setTeamName(res.teamName || "");
-        setUserName(res.name || "");
       } else {
         console.error("Error fetching data: ", res.message);
         toast.error(res.message);
@@ -112,7 +117,7 @@ export default function Home() {
             Round Points: {roundPoints}
           </span>
           <span>Round: {roundName}</span>
-          <span>Transfer: 0</span>
+          <span>Transfers Used: {transfersUsed}</span>
         </div>
         <div className="text-center font-semibold">
           Captain: <span className="text-blue-700">{captainName}</span>
@@ -126,16 +131,16 @@ export default function Home() {
       <div className="mb-4 space-y-4">
         {/* First row */}
         <div className="grid grid-cols-2 gap-2">
-          {players.slice(0, 2).map((player, index) =>
-            renderPlayerCard(player, index)
-          )}
+          {players
+            .slice(0, 2)
+            .map((player, index) => renderPlayerCard(player, index))}
         </div>
 
         {/* Second row */}
         <div className="grid grid-cols-2 gap-2">
-          {players.slice(2, 4).map((player, index) =>
-            renderPlayerCard(player, index + 2)
-          )}
+          {players
+            .slice(2, 4)
+            .map((player, index) => renderPlayerCard(player, index + 2))}
         </div>
 
         {/* Centered 5th card (GK) */}
@@ -147,9 +152,9 @@ export default function Home() {
         <div>
           <p className="font-semibold mb-2">Subs:</p>
           <div className="grid grid-cols-2 gap-2">
-            {players.slice(5, 7).map((player, index) =>
-              renderPlayerCard(player, index + 5)
-            )}
+            {players
+              .slice(5, 7)
+              .map((player, index) => renderPlayerCard(player, index + 5))}
           </div>
         </div>
       </div>
