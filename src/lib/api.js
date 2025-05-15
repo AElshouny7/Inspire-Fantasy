@@ -1,16 +1,11 @@
-const BACKEND_URL =
-  "https://script.google.com/macros/s/AKfycbwy6U1JzUiukosZWpUl6eVathT4G6zqbMo9WZBbHyp-kZIZJdgFifNf-8mXX7_J0QXlFA/exec";
+const BACKEND_URL = "/api/proxy"; // NEW
 
 export async function callBackend(action, payload = {}) {
-  const formData = new URLSearchParams();
-  formData.append("action", action);
-  formData.append("data", JSON.stringify(payload)); // only one param `data`
-
   const res = await fetch(BACKEND_URL, {
     method: "POST",
-    body: formData, // NOT JSON.stringify
+    body: JSON.stringify({ action, ...payload }),
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Type": "application/json",
     },
   });
 
