@@ -4,6 +4,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
+import { toast } from "sonner";
+
 import { callBackend } from "@/lib/api";
 
 const initialPlayers = Array(7).fill(null);
@@ -21,14 +23,19 @@ export default function Home() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const userId = localStorage.getItem("userId");
+  const userId = localStorage.getItem("userId")?.trim();
 
   useEffect(() => {
     async function fetchData() {
       if (!userId) return;
 
-      const res = await callBackend("viewMyPlayers", { userId });
+      console.log("Fetching data for user: ", userId);
+
+      const res = await callBackend("viewMyPlayers", { userId }); // ✅ fix is here
       if (res.status === "success") {
+        console.log("Fetched players: ", res.players);
+        toast.success("Fetched players successfully");
+
         setPlayers(res.players);
         setCaptainIndex(res.players.findIndex((p) => p.isCaptain));
         setTotalPoints(res.totalPoints || 0);
@@ -36,9 +43,11 @@ export default function Home() {
         setRoundName(res.round || "N/A");
         setTeamName(res.teamName || "");
         setUserName(res.name || "");
+      } else {
+        console.error("Error fetching data: ", res.message);
+        toast.error(res.message);
       }
     }
-
     fetchData();
   }, [location.state?.updatedPlayers]);
 
@@ -158,8 +167,8 @@ export default function Home() {
               onClick={() => handleCardClick(4)}
             >
               <span>
-                {player[4].name} <br /> {player[4].team} <br />{" "}
-                {player[4].roundPoints}{" "}
+                {players[4].name} <br /> {players[4].team} <br />{" "}
+                {players[4].roundPoints}{" "}
               </span>
             </Card>
           )}

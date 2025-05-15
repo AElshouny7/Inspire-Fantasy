@@ -1,5 +1,5 @@
 // components/Registration.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,21 +14,44 @@ export default function Registration() {
   const [teamName, setTeamName] = useState("");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    toast("Welcome to the registration page!", {
+      duration: 3000,
+      style: {
+        backgroundColor: "#f0f4f8",
+        color: "#333",
+      },
+    });
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await callBackend("registerUser", {
-      name: username,
-      teamName,
-    });
-    console.log(response);
 
-    if (response.status === "success") {
-      localStorage.setItem("userId", response.userId);
-      localStorage.setItem("teamName", teamName);
-      toast.success("Registration successful!");
-      navigate("/home", { state: { userId: response.userId } });
-    } else {
-      toast.error(response.message);
+    toast("⏳ Registering user...");
+
+    try {
+      const response = await callBackend("registerUser", {
+        name: username,
+        teamName,
+      });
+
+      toast("✅ Backend responded.");
+
+      if (response.status === "success") {
+        localStorage.setItem("userId", response.userId);
+        localStorage.setItem("name", username);
+        localStorage.setItem("teamName", teamName);
+        toast.success("🎉 Registration successful!");
+
+        setTimeout(() => {
+          navigate("/home", { replace: true });
+        }, 100);
+      } else {
+        toast.error(response.message || "Registration failed.");
+      }
+    } catch (err) {
+      console.error("Error occurred:", err.message);
+      toast.error(`Network error: ${err.message}`);
     }
   };
 
