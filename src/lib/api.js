@@ -1,5 +1,5 @@
 const BACKEND_URL =
-  "/api/macros/s/AKfycbwy6U1JzUiukosZWpUl6eVathT4G6zqbMo9WZBbHyp-kZIZJdgFifNf-8mXX7_J0QXlFA/dev";
+  "https://script.google.com/macros/s/AKfycbwy6U1JzUiukosZWpUl6eVathT4G6zqbMo9WZBbHyp-kZIZJdgFifNf-8mXX7_J0QXlFA/exec";
 
 export async function callBackend(action, payload = {}) {
   const res = await fetch(BACKEND_URL, {
