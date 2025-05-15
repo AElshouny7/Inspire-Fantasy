@@ -62,7 +62,7 @@ export default function PlayerList() {
         toast.error(response.message);
       }
     } else {
-      // Add mode: use position to determine GK/Sub/Outfield
+
       const isSub = transferIndex >= 5;
       const isGK = transferIndex === 4;
 

@@ -4,14 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
 import { toast } from "sonner";
-
 import { callBackend } from "../lib/api";
 
 export default function Registration() {
   const [username, setUsername] = useState("");
   const [teamName, setTeamName] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,6 +25,8 @@ export default function Registration() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // prevent double submit
+    setLoading(true);
 
     toast("⏳ Registering user...");
 
@@ -53,6 +54,8 @@ export default function Registration() {
       console.error("Error occurred:", err.message);
       toast.error(`Network error: ${err.message}`);
     }
+
+    setLoading(false); // re-enable only if you want retry on failure
   };
 
   return (
@@ -73,8 +76,15 @@ export default function Registration() {
               onChange={(e) => setTeamName(e.target.value)}
               required
             />
-            <Button type="submit" className="w-full">
-              Register
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
+                  Registering...
+                </div>
+              ) : (
+                "Register"
+              )}
             </Button>
           </form>
         </CardContent>
