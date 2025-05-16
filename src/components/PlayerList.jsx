@@ -37,11 +37,13 @@ export default function PlayerList() {
     fetchPlayers();
   }, []);
 
-  const filteredPlayers = allPlayers.filter((player) => {
-    if (filter === "gk") return player.isGK === true;
-    if (filter === "outfield") return player.isGK === false;
-    return true;
-  });
+  const filteredPlayers = allPlayers
+    .filter((player) => {
+      if (filter === "gk") return player.isGK === true;
+      if (filter === "outfield") return player.isGK === false;
+      return true;
+    })
+    .sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
 
   const isPlayerSelected = (player) =>
     selectedPlayers.some((p) => p?.id === player.id);

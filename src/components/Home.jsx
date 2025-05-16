@@ -33,15 +33,24 @@ export default function Home() {
 
       console.log("Fetching data for user: ", userId);
 
-      const res = await callBackend("viewMyPlayers", { userId }); // ✅ fix is here
+      const res = await callBackend("viewMyPlayers", { userId });
       if (res.status === "success") {
         console.log("Fetched players: ", res.players);
         toast.success("Fetched players successfully");
 
-        // Fill missing slots with nulls up to 7
-        const paddedPlayers = [...res.players];
-        while (paddedPlayers.length < 7) paddedPlayers.push(null);
-        setPlayers(paddedPlayers);
+        const gkMain = res.players.find((p) => p.isGK && !p.isSub);
+        const outfieldMain = res.players.filter((p) => !p.isGK && !p.isSub);
+        const subs = res.players.filter((p) => p.isSub);
+
+        const sortedPlayers = [
+          ...outfieldMain.slice(0, 4), // 0–3 outfield starters
+          gkMain || null, // 4 goalkeeper
+          ...subs.slice(0, 2), // 5–6 subs
+        ];
+
+        // Pad to ensure exactly 7 slots
+        while (sortedPlayers.length < 7) sortedPlayers.push(null);
+        setPlayers(sortedPlayers);
 
         setCaptainIndex(res.players.findIndex((p) => p.isCaptain));
         setTotalPoints(res.totalPoints || 0);
@@ -56,7 +65,7 @@ export default function Home() {
     fetchData();
   }, [location.state?.updatedPlayers]);
 
-  const handleCardClick = (index) => {
+  const handleCardClick = async (index) => {
     let filter = null;
     if ([0, 1, 2, 3].includes(index)) {
       filter = "outfield";
@@ -69,15 +78,39 @@ export default function Home() {
     if (mode === "transfer") {
       setTransferIndex(index);
       navigate("/players", {
-        state: { selectedPlayers: players, transferIndex: index, filter },
+        state: {
+          selectedPlayers: players,
+          transferIndex: index,
+          filter,
+          mode: "transfer", // ✅ pass the mode
+        },
       });
     } else if (mode === "captain") {
-      setCaptainIndex(index);
+      const selectedCaptain = players[index];
+      if (!selectedCaptain || !userId) return;
+
+      const res = await callBackend("selectCaptain", {
+        userId,
+        captainId: selectedCaptain.id,
+      });
+
+      if (res.status === "success") {
+        setCaptainIndex(index);
+        toast.success("Captain updated successfully!");
+      } else {
+        toast.error("Error updating captain: " + res.message);
+      }
+
       setMode(null);
     } else {
       setTransferIndex(index);
       navigate("/players", {
-        state: { selectedPlayers: players, transferIndex: index, filter },
+        state: {
+          selectedPlayers: players,
+          transferIndex: index,
+          filter,
+          mode: "add", // ✅ assume default is add mode
+        },
       });
     }
   };
@@ -100,7 +133,8 @@ export default function Home() {
     >
       {player ? (
         <span className="text-center text-sm">
-          {player.name} <br /> {player.team} <br /> {player.roundPoints}
+          {player.name} <br /> {player.team} <br /> {player.roundPoints} <br />{" "}
+          {player.totalPoints}
         </span>
       ) : (
         <span className="text-2xl text-gray-400">+</span>
