@@ -1,5 +1,5 @@
 // components/Registration.jsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,28 +7,16 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { callBackend } from "../lib/api";
 
-export default function Registration() {
+export default function Registration({ setUserId }) {
   const [username, setUsername] = useState("");
   const [teamName, setTeamName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    toast("Welcome to the registration page!", {
-      duration: 3000,
-      style: {
-        backgroundColor: "#f0f4f8",
-        color: "#333",
-      },
-    });
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return; // prevent double submit
     setLoading(true);
-
-    toast("⏳ Registering user...");
 
     try {
       const response = await callBackend("registerUser", {
@@ -36,12 +24,12 @@ export default function Registration() {
         teamName,
       });
 
-      toast("✅ Backend responded.");
-
       if (response.status === "success") {
         localStorage.setItem("userId", response.userId);
         localStorage.setItem("name", username);
         localStorage.setItem("teamName", teamName);
+
+        setUserId(response.userId);
         toast.success("🎉 Registration successful!");
 
         setTimeout(() => {

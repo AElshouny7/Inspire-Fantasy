@@ -9,6 +9,7 @@ import Registration from "@/components/Registration";
 import Home from "@/components/Home";
 import PlayerList from "@/components/PlayerList";
 import Leaderboard from "@/components/Leaderboard";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 function App() {
   const [userId, setUserId] = useState(null);
@@ -20,18 +21,45 @@ function App() {
     setCheckedStorage(true);
   }, []);
 
-  if (!checkedStorage) return null; // wait for localStorage check
+  if (!checkedStorage) return null;
 
   return (
     <Router>
       <Routes>
         <Route
           path="/"
-          element={userId ? <Navigate to="/home" /> : <Registration />}
+          element={
+            userId ? (
+              <Navigate to="/home" replace />
+            ) : (
+              <Registration setUserId={setUserId} />
+            )
+          }
         />
-        <Route path="/home" element={<Home />} />
-        <Route path="/players" element={<PlayerList />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute userId={userId}>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/players"
+          element={
+            <ProtectedRoute userId={userId}>
+              <PlayerList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaderboard"
+          element={
+            <ProtectedRoute userId={userId}>
+              <Leaderboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );
