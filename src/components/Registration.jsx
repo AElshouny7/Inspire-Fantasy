@@ -1,3 +1,4 @@
+// components/Registration.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { callBackend } from "../lib/api";
 
-export default function Registration() {
+export default function Registration({ setUserId }) {
   const [username, setUsername] = useState("");
   const [teamName, setTeamName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,18 +18,29 @@ export default function Registration() {
     if (loading) return; // prevent double submit
     setLoading(true);
 
-    const response = await callBackend("registerUser", {
-      name: username,
-      teamName,
-    });
+    try {
+      const response = await callBackend("registerUser", {
+        name: username,
+        teamName,
+      });
 
-    if (response.status === "success") {
-      localStorage.setItem("userId", response.userId);
-      localStorage.setItem("teamName", teamName);
-      toast.success("Registration successful!");
-      navigate("/home", { state: { userId: response.userId } });
-    } else {
-      toast.error(response.message);
+      if (response.status === "success") {
+        localStorage.setItem("userId", response.userId);
+        localStorage.setItem("name", username);
+        localStorage.setItem("teamName", teamName);
+
+        setUserId(response.userId);
+        toast.success("🎉 Registration successful!");
+
+        setTimeout(() => {
+          navigate("/home", { replace: true });
+        }, 100);
+      } else {
+        toast.error(response.message || "Registration failed.");
+      }
+    } catch (err) {
+      console.error("Error occurred:", err.message);
+      toast.error(`Network error: ${err.message}`);
     }
 
     setLoading(false); // re-enable only if you want retry on failure
@@ -52,11 +64,7 @@ export default function Registration() {
               onChange={(e) => setTeamName(e.target.value)}
               required
             />
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>

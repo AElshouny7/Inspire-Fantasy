@@ -4,6 +4,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import PlayerCard from "@/components/PlayerCard";
+import { toast } from "sonner";
+
 import { callBackend } from "@/lib/api";
 
 const initialPlayers = Array(7).fill(null);
@@ -15,34 +17,55 @@ export default function Home() {
   const [transferIndex, setTransferIndex] = useState(null);
   const [totalPoints, setTotalPoints] = useState(0);
   const [roundPoints, setRoundPoints] = useState(0);
+  const [transfersUsed, setTransfersUsed] = useState(0);
   const [roundName, setRoundName] = useState("");
-  const [teamName, setTeamName] = useState("");
-  const [userName, setUserName] = useState("");
+
+  const teamName = localStorage.getItem("teamName") || "";
+  const userName = localStorage.getItem("name") || "";
 
   const navigate = useNavigate();
   const location = useLocation();
-  const userId = localStorage.getItem("userId");
+  const userId = localStorage.getItem("userId")?.trim();
 
   useEffect(() => {
     async function fetchData() {
       if (!userId) return;
 
+      console.log("Fetching data for user: ", userId);
+
       const res = await callBackend("viewMyPlayers", { userId });
       if (res.status === "success") {
-        setPlayers(res.players);
+        console.log("Fetched players: ", res.players);
+        toast.success("Fetched players successfully");
+
+        const gkMain = res.players.find((p) => p.isGK && !p.isSub);
+        const outfieldMain = res.players.filter((p) => !p.isGK && !p.isSub);
+        const subs = res.players.filter((p) => p.isSub);
+
+        const sortedPlayers = [
+          ...outfieldMain.slice(0, 4), // 0–3 outfield starters
+          gkMain || null, // 4 goalkeeper
+          ...subs.slice(0, 2), // 5–6 subs
+        ];
+
+        // Pad to ensure exactly 7 slots
+        while (sortedPlayers.length < 7) sortedPlayers.push(null);
+        setPlayers(sortedPlayers);
+
         setCaptainIndex(res.players.findIndex((p) => p.isCaptain));
         setTotalPoints(res.totalPoints || 0);
         setRoundPoints(res.roundPoints || 0);
+        setTransfersUsed(res.transfersUsed || 0);
         setRoundName(res.round || "N/A");
-        setTeamName(res.teamName || "");
-        setUserName(res.name || "");
+      } else {
+        console.error("Error fetching data: ", res.message);
+        toast.error(res.message);
       }
     }
-
     fetchData();
   }, [location.state?.updatedPlayers]);
 
-  const handleCardClick = (index) => {
+  const handleCardClick = async (index) => {
     let filter = null;
     if ([0, 1, 2, 3].includes(index)) {
       filter = "outfield";
@@ -55,15 +78,39 @@ export default function Home() {
     if (mode === "transfer") {
       setTransferIndex(index);
       navigate("/players", {
-        state: { selectedPlayers: players, transferIndex: index, filter },
+        state: {
+          selectedPlayers: players,
+          transferIndex: index,
+          filter,
+          mode: "transfer", // ✅ pass the mode
+        },
       });
     } else if (mode === "captain") {
-      setCaptainIndex(index);
+      const selectedCaptain = players[index];
+      if (!selectedCaptain || !userId) return;
+
+      const res = await callBackend("selectCaptain", {
+        userId,
+        captainId: selectedCaptain.id,
+      });
+
+      if (res.status === "success") {
+        setCaptainIndex(index);
+        toast.success("Captain updated successfully!");
+      } else {
+        toast.error("Error updating captain: " + res.message);
+      }
+
       setMode(null);
     } else {
       setTransferIndex(index);
       navigate("/players", {
-        state: { selectedPlayers: players, transferIndex: index, filter },
+        state: {
+          selectedPlayers: players,
+          transferIndex: index,
+          filter,
+          mode: "add", // ✅ assume default is add mode
+        },
       });
     }
   };
@@ -86,7 +133,8 @@ export default function Home() {
     >
       {player ? (
         <span className="text-center text-sm">
-          {player.name} <br /> {player.team} <br /> {player.roundPoints}
+          {player.name} <br /> {player.team} <br /> {player.roundPoints} <br />{" "}
+          {player.totalPoints}
         </span>
       ) : (
         <span className="text-2xl text-gray-400">+</span>
@@ -103,7 +151,7 @@ export default function Home() {
             Round Points: {roundPoints}
           </span>
           <span>Round: {roundName}</span>
-          <span>Transfer: 0</span>
+          <span>Transfers Used: {transfersUsed}</span>
         </div>
         <div className="text-center font-semibold">
           Captain: <span className="text-blue-700">{captainName}</span>
@@ -117,16 +165,16 @@ export default function Home() {
       <div className="mb-4 space-y-4">
         {/* First row */}
         <div className="grid grid-cols-2 gap-2">
-          {players.slice(0, 2).map((player, index) =>
-            renderPlayerCard(player, index)
-          )}
+          {players
+            .slice(0, 2)
+            .map((player, index) => renderPlayerCard(player, index))}
         </div>
 
         {/* Second row */}
         <div className="grid grid-cols-2 gap-2">
-          {players.slice(2, 4).map((player, index) =>
-            renderPlayerCard(player, index + 2)
-          )}
+          {players
+            .slice(2, 4)
+            .map((player, index) => renderPlayerCard(player, index + 2))}
         </div>
 
         {/* Centered 5th card (GK) */}
@@ -138,9 +186,9 @@ export default function Home() {
         <div>
           <p className="font-semibold mb-2">Subs:</p>
           <div className="grid grid-cols-2 gap-2">
-            {players.slice(5, 7).map((player, index) =>
-              renderPlayerCard(player, index + 5)
-            )}
+            {players
+              .slice(5, 7)
+              .map((player, index) => renderPlayerCard(player, index + 5))}
           </div>
         </div>
       </div>
