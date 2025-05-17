@@ -4,11 +4,12 @@ import teamLogo from "@/assets/inspireman.png"; // adjust path if needed
 export default function PlayerCard({ player, onClick, isSelected, isCaptain, mode }) {
   return (
     <div
-      onClick={onClick}
-      className={`w-28 h-40 rounded-2xl p-2 flex flex-col justify-between items-center text-white cursor-pointer shadow-xl border-2
-        bg-gradient-to-b from-black via-gray-900 to-black
-        ${isSelected ? "border-yellow-400 scale-105" : "border-white/10 hover:border-yellow-400"}
-        transition-transform duration-300`}
+    onClick={!disabled ? onClick : undefined}
+    className={`w-28 h-40 rounded-2xl p-2 flex flex-col justify-center items-center text-white cursor-pointer shadow-xl border-2
+      bg-gradient-to-b from-black via-gray-900 to-black
+      ${isCaptain ? "border-yellow-400" : isSelected ? "border-blue-400" : "border-white/10 hover:border-yellow-400"}
+      ${disabled ? "opacity-50 cursor-not-allowed" : ""}
+      transition-transform duration-300`}
     >
       {player ? (
         <>

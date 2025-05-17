@@ -11,7 +11,7 @@ const initialPlayers = Array(7).fill(null);
 
 export default function Home() {
   const [players, setPlayers] = useState(initialPlayers);
-  const [mode, setMode] = useState(null);
+  const [mode, setMode] = useState(null); // null, 'transfer', 'captain'
   const [captainIndex, setCaptainIndex] = useState(null);
   const [transferIndex, setTransferIndex] = useState(null);
   const [totalPoints, setTotalPoints] = useState(0);
@@ -21,10 +21,10 @@ export default function Home() {
 
   const teamName = localStorage.getItem("teamName") || "";
   const userName = localStorage.getItem("name") || "";
+  const userId = localStorage.getItem("userId")?.trim();
 
   const navigate = useNavigate();
   const location = useLocation();
-  const userId = localStorage.getItem("userId")?.trim();
 
   useEffect(() => {
     async function fetchData() {
@@ -39,9 +39,9 @@ export default function Home() {
         const subs = res.players.filter((p) => p.isSub);
 
         const sortedPlayers = [
-          ...outfieldMain.slice(0, 4), // 0–3
-          gkMain || null,             // 4
-          ...subs.slice(0, 2),        // 5–6
+          ...outfieldMain.slice(0, 4),
+          gkMain || null,
+          ...subs.slice(0, 2),
         ];
 
         while (sortedPlayers.length < 7) sortedPlayers.push(null);
@@ -60,60 +60,79 @@ export default function Home() {
     fetchData();
   }, [location.state?.updatedPlayers]);
 
+  const isSub = (index) => index === 5 || index === 6;
+  const isOutfield = (index) => index >= 0 && index <= 3;
+
   const handleCardClick = async (index) => {
-    let filter = null;
-    if ([0, 1, 2, 3].includes(index)) filter = "outfield";
-    else if (index === 4) filter = "gk";
-    else filter = "all";
+    const selectedPlayer = players[index];
+    if (!selectedPlayer) return;
 
-    if (mode === "transfer") {
-      setTransferIndex(index);
-      navigate("/players", {
-        state: {
-          selectedPlayers: players,
-          transferIndex: index,
-          filter,
-          mode: "transfer",
-        },
-      });
-    } else if (mode === "captain") {
-      const selectedCaptain = players[index];
-      if (!selectedCaptain || !userId) return;
+    if (!mode) return;
 
+    if (mode === "captain") {
+      if (isSub(index)) return;
       const res = await callBackend("selectCaptain", {
         userId,
-        captainId: selectedCaptain.id,
+        captainId: selectedPlayer.id,
       });
-
       if (res.status === "success") {
         setCaptainIndex(index);
-        toast.success("Captain updated successfully!");
+        toast.success("Captain updated!");
       } else {
-        toast.error("Error updating captain: " + res.message);
+        toast.error(res.message);
       }
-
       setMode(null);
-    } else {
-      setTransferIndex(index);
-      navigate("/players", {
-        state: {
-          selectedPlayers: players,
-          transferIndex: index,
-          filter,
-          mode: "add",
-        },
-      });
+    }
+
+    else if (mode === "transfer") {
+      if (isSub(index)) {
+        setTransferIndex(index); // select sub first
+      } else if (isOutfield(index)) {
+        if (transferIndex === null) {
+          // initiate transfer
+          navigate("/players", {
+            state: {
+              selectedPlayers: players,
+              transferIndex: index,
+              filter: index === 4 ? "gk" : "outfield",
+              mode: "transfer",
+            },
+          });
+        } else if (isSub(transferIndex)) {
+          // Swap sub and outfield player
+          const updated = [...players];
+          [updated[transferIndex], updated[index]] = [updated[index], updated[transferIndex]];
+          setPlayers(updated);
+          toast.success("Substitution successful");
+          setTransferIndex(null);
+        }
+      }
     }
   };
 
   const toggleMode = (selectedMode) => {
-    setMode(mode === selectedMode ? null : selectedMode);
+    setMode((prev) => (prev === selectedMode ? null : selectedMode));
+    setTransferIndex(null);
   };
 
-  const captainName = players[captainIndex]?.name || "None";
+  const isCardClickable = (index) => {
+    if (mode === "captain") return !isSub(index);
+    if (mode === "transfer") {
+      if (transferIndex === null) return true;
+      if (isSub(transferIndex)) return isOutfield(index);
+    }
+    return false;
+  };
+
+  const isHighlighted = (index) => {
+    if (mode === "transfer" && isSub(transferIndex)) {
+      return isOutfield(index);
+    }
+    return false;
+  };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
+    <div className="min-h-screen bg-black text-white p-4">
       <header className="flex flex-col mb-4 text-sm">
         <div className="flex justify-between mb-1">
           <span>
@@ -124,7 +143,7 @@ export default function Home() {
           <span>Transfers Used: {transfersUsed}</span>
         </div>
         <div className="text-center font-semibold">
-          Captain: <span className="text-yellow-400">{captainName}</span>
+          Captain: <span className="text-yellow-400">{players[captainIndex]?.name || "None"}</span>
         </div>
       </header>
 
@@ -132,68 +151,65 @@ export default function Home() {
         {userName} - {teamName}
       </h1>
 
-      {/* Pitch background with players */}
+      {/* Pitch Background */}
       <div
-        className="relative w-full max-w-3xl mx-auto p-6 rounded-xl space-y-6 bg-center bg-cover"
-        style={{
-          backgroundImage: `url(${pitch})`,
-        }}
+        className="relative w-full max-w-2xl mx-auto p-4 rounded-xl space-y-4 bg-no-repeat bg-cover bg-center"
+        style={{ backgroundImage: `url(${pitch})` }}
       >
-        {/* First row (2 players) */}
-        <div className="flex justify-center gap-4">
-          {players.slice(0, 2).map((player, index) => (
+        <div className="grid grid-cols-2 gap-2">
+          {[0, 1].map((i) => (
             <PlayerCard
-              key={index}
-              player={player}
-              onClick={() => handleCardClick(index)}
-              isSelected={mode !== null}
-              isCaptain={index === captainIndex}
+              key={i}
+              player={players[i]}
+              onClick={() => handleCardClick(i)}
+              isSelected={isHighlighted(i)}
+              isCaptain={i === captainIndex}
+              disabled={!isCardClickable(i)}
             />
           ))}
         </div>
-
-        {/* Second row (2 players) */}
-        <div className="flex justify-center gap-4">
-          {players.slice(2, 4).map((player, index) => (
+        <div className="grid grid-cols-2 gap-2">
+          {[2, 3].map((i) => (
             <PlayerCard
-              key={index + 2}
-              player={player}
-              onClick={() => handleCardClick(index + 2)}
-              isSelected={mode !== null}
-              isCaptain={index + 2 === captainIndex}
+              key={i}
+              player={players[i]}
+              onClick={() => handleCardClick(i)}
+              isSelected={isHighlighted(i)}
+              isCaptain={i === captainIndex}
+              disabled={!isCardClickable(i)}
             />
           ))}
         </div>
-
-        {/* Goalkeeper row (1 card) */}
         <div className="flex justify-center">
           <PlayerCard
             player={players[4]}
             onClick={() => handleCardClick(4)}
-            isSelected={mode !== null}
+            isSelected={isHighlighted(4)}
             isCaptain={4 === captainIndex}
+            disabled={!isCardClickable(4)}
           />
         </div>
       </div>
 
-      {/* Substitutes below the pitch */}
-      <div className="max-w-3xl mx-auto mt-6">
-        <p className="text-center font-semibold mb-2">Subs</p>
-        <div className="flex justify-center gap-4">
-          {players.slice(5, 7).map((player, index) => (
+      {/* Subs outside pitch */}
+      <div className="mt-4">
+        <p className="text-center font-semibold mb-2">Substitutes</p>
+        <div className="grid grid-cols-2 gap-2 max-w-xs mx-auto">
+          {[5, 6].map((i) => (
             <PlayerCard
-              key={index + 5}
-              player={player}
-              onClick={() => handleCardClick(index + 5)}
-              isSelected={mode !== null}
-              isCaptain={index + 5 === captainIndex}
+              key={i}
+              player={players[i]}
+              onClick={() => handleCardClick(i)}
+              isSelected={i === transferIndex}
+              isCaptain={i === captainIndex}
+              disabled={mode !== "transfer"}
             />
           ))}
         </div>
       </div>
 
       {/* Controls */}
-      <div className="flex justify-center gap-4 mt-6">
+      <div className="flex justify-between gap-2 mt-6">
         <Button
           variant={mode === "captain" ? "default" : "outline"}
           onClick={() => toggleMode("captain")}
