@@ -19,6 +19,16 @@ export default function PlayerCard({ player, onClick, isSelected, isCaptain, mod
             className="w-6 h-6 mb-1 drop-shadow"
           />
 
+          {/* Player Image Placeholder */}
+          {/* <img src={player.imageUrl} alt={`${player.name} image`} className="w-12 h-12 rounded-full mb-2" /> */}
+
+          {/* Captain Star */}
+          {isCaptain && (
+            <div className="absolute top-1 right-1">
+              <span className="text-yellow-400 text-lg">★</span>
+            </div>
+          )}
+
           {/* Player Name */}
           <div className="text-sm font-bold text-yellow-400 text-center">
             {player.name}
@@ -33,12 +43,7 @@ export default function PlayerCard({ player, onClick, isSelected, isCaptain, mod
             Total: {player.totalPoints ?? 0}
           </div>
 
-          {/* Captain Star */}
-          {isCaptain && (
-            <div className="absolute top-1 right-1">
-              <span className="text-yellow-400 text-lg">★</span>
-            </div>
-          )}
+          
         </>
       ) : (
         <span className="text-3xl text-gray-500">+</span>

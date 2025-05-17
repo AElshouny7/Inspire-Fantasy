@@ -113,8 +113,8 @@ export default function Home() {
   const captainName = players[captainIndex]?.name || "None";
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <header className="flex flex-col mb-4 text-sm text-gray-700">
+    <div className="min-h-screen bg-gray-900 text-white p-4">
+      <header className="flex flex-col mb-4 text-sm">
         <div className="flex justify-between mb-1">
           <span>
             Total Points: {totalPoints} <br />
@@ -124,25 +124,23 @@ export default function Home() {
           <span>Transfers Used: {transfersUsed}</span>
         </div>
         <div className="text-center font-semibold">
-          Captain: <span className="text-blue-700">{captainName}</span>
+          Captain: <span className="text-yellow-400">{captainName}</span>
         </div>
       </header>
 
-      <h1 className="text-center text-xl font-bold mb-2">
+      <h1 className="text-center text-xl font-bold mb-4">
         {userName} - {teamName}
       </h1>
 
-      {/* Player Cards on Pitch Background */}
+      {/* Pitch background with players */}
       <div
-        className="relative w-full max-w-2xl mx-auto p-4 rounded-xl space-y-4"
+        className="relative w-full max-w-3xl mx-auto p-6 rounded-xl space-y-6 bg-center bg-cover"
         style={{
           backgroundImage: `url(${pitch})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
         }}
       >
-        {/* First row */}
-        <div className="grid grid-cols-2 gap-2">
+        {/* First row (2 players) */}
+        <div className="flex justify-center gap-4">
           {players.slice(0, 2).map((player, index) => (
             <PlayerCard
               key={index}
@@ -154,8 +152,8 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Second row */}
-        <div className="grid grid-cols-2 gap-2">
+        {/* Second row (2 players) */}
+        <div className="flex justify-center gap-4">
           {players.slice(2, 4).map((player, index) => (
             <PlayerCard
               key={index + 2}
@@ -167,7 +165,7 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Goalkeeper */}
+        {/* Goalkeeper row (1 card) */}
         <div className="flex justify-center">
           <PlayerCard
             player={players[4]}
@@ -176,26 +174,26 @@ export default function Home() {
             isCaptain={4 === captainIndex}
           />
         </div>
+      </div>
 
-        {/* Substitutes */}
-        <div>
-          <p className="text-white text-center font-semibold mb-1">Subs</p>
-          <div className="grid grid-cols-2 gap-2">
-            {players.slice(5, 7).map((player, index) => (
-              <PlayerCard
-                key={index + 5}
-                player={player}
-                onClick={() => handleCardClick(index + 5)}
-                isSelected={mode !== null}
-                isCaptain={index + 5 === captainIndex}
-              />
-            ))}
-          </div>
+      {/* Substitutes below the pitch */}
+      <div className="max-w-3xl mx-auto mt-6">
+        <p className="text-center font-semibold mb-2">Subs</p>
+        <div className="flex justify-center gap-4">
+          {players.slice(5, 7).map((player, index) => (
+            <PlayerCard
+              key={index + 5}
+              player={player}
+              onClick={() => handleCardClick(index + 5)}
+              isSelected={mode !== null}
+              isCaptain={index + 5 === captainIndex}
+            />
+          ))}
         </div>
       </div>
 
       {/* Controls */}
-      <div className="flex justify-between gap-2 mt-4">
+      <div className="flex justify-center gap-4 mt-6">
         <Button
           variant={mode === "captain" ? "default" : "outline"}
           onClick={() => toggleMode("captain")}
@@ -217,8 +215,6 @@ export default function Home() {
 
 
 
-
-
 // // components/Home.jsx
 // import { useState, useEffect } from "react";
 // import { useNavigate, useLocation } from "react-router-dom";
@@ -226,12 +222,13 @@ export default function Home() {
 // import { toast } from "sonner";
 // import PlayerCard from "@/components/PlayerCard";
 // import { callBackend } from "@/lib/api";
+// import pitch from "@/assets/pitch.jpg";
 
 // const initialPlayers = Array(7).fill(null);
 
 // export default function Home() {
 //   const [players, setPlayers] = useState(initialPlayers);
-//   const [mode, setMode] = useState(null); // null, 'transfer', 'captain'
+//   const [mode, setMode] = useState(null);
 //   const [captainIndex, setCaptainIndex] = useState(null);
 //   const [transferIndex, setTransferIndex] = useState(null);
 //   const [totalPoints, setTotalPoints] = useState(0);
@@ -241,10 +238,10 @@ export default function Home() {
 
 //   const teamName = localStorage.getItem("teamName") || "";
 //   const userName = localStorage.getItem("name") || "";
-//   const userId = localStorage.getItem("userId")?.trim();
 
 //   const navigate = useNavigate();
 //   const location = useLocation();
+//   const userId = localStorage.getItem("userId")?.trim();
 
 //   useEffect(() => {
 //     async function fetchData() {
@@ -259,16 +256,15 @@ export default function Home() {
 //         const subs = res.players.filter((p) => p.isSub);
 
 //         const sortedPlayers = [
-//           ...outfieldMain.slice(0, 4), // 0–3 outfield
-//           gkMain || null,             // 4 GK
-//           ...subs.slice(0, 2),        // 5–6 subs
+//           ...outfieldMain.slice(0, 4), // 0–3
+//           gkMain || null,             // 4
+//           ...subs.slice(0, 2),        // 5–6
 //         ];
 
 //         while (sortedPlayers.length < 7) sortedPlayers.push(null);
 //         setPlayers(sortedPlayers);
 
-//         const captain = res.players.find((p) => p.isCaptain);
-//         setCaptainIndex(captain ? sortedPlayers.findIndex(p => p?.id === captain.id) : null);
+//         setCaptainIndex(res.players.findIndex((p) => p.isCaptain));
 //         setTotalPoints(res.totalPoints || 0);
 //         setRoundPoints(res.roundPoints || 0);
 //         setTransfersUsed(res.transfersUsed || 0);
@@ -283,13 +279,9 @@ export default function Home() {
 
 //   const handleCardClick = async (index) => {
 //     let filter = null;
-//     if ([0, 1, 2, 3].includes(index)) {
-//       filter = "outfield";
-//     } else if (index === 4) {
-//       filter = "gk";
-//     } else {
-//       filter = "all";
-//     }
+//     if ([0, 1, 2, 3].includes(index)) filter = "outfield";
+//     else if (index === 4) filter = "gk";
+//     else filter = "all";
 
 //     if (mode === "transfer") {
 //       setTransferIndex(index);
@@ -337,16 +329,6 @@ export default function Home() {
 
 //   const captainName = players[captainIndex]?.name || "None";
 
-//   const renderPlayerCard = (player, index) => (
-//     <PlayerCard
-//       key={index}
-//       player={player}
-//       isCaptain={index === captainIndex}
-//       onClick={() => handleCardClick(index)}
-//       mode={mode}
-//     />
-//   );
-
 //   return (
 //     <div className="min-h-screen bg-gray-100 p-4">
 //       <header className="flex flex-col mb-4 text-sm text-gray-700">
@@ -367,32 +349,70 @@ export default function Home() {
 //         {userName} - {teamName}
 //       </h1>
 
-//       <div className="mb-4 space-y-4">
+//       {/* Player Cards on Pitch Background */}
+//       <div
+//         className="relative w-full max-w-2xl mx-auto p-4 rounded-xl space-y-4"
+//         style={{
+//           backgroundImage: `url(${pitch})`,
+//           backgroundSize: "cover",
+//           backgroundPosition: "center",
+//         }}
+//       >
 //         {/* First row */}
 //         <div className="grid grid-cols-2 gap-2">
-//           {players.slice(0, 2).map((player, index) => renderPlayerCard(player, index))}
+//           {players.slice(0, 2).map((player, index) => (
+//             <PlayerCard
+//               key={index}
+//               player={player}
+//               onClick={() => handleCardClick(index)}
+//               isSelected={mode !== null}
+//               isCaptain={index === captainIndex}
+//             />
+//           ))}
 //         </div>
 
 //         {/* Second row */}
 //         <div className="grid grid-cols-2 gap-2">
-//           {players.slice(2, 4).map((player, index) => renderPlayerCard(player, index + 2))}
+//           {players.slice(2, 4).map((player, index) => (
+//             <PlayerCard
+//               key={index + 2}
+//               player={player}
+//               onClick={() => handleCardClick(index + 2)}
+//               isSelected={mode !== null}
+//               isCaptain={index + 2 === captainIndex}
+//             />
+//           ))}
 //         </div>
 
-//         {/* Centered GK card */}
+//         {/* Goalkeeper */}
 //         <div className="flex justify-center">
-//           {renderPlayerCard(players[4], 4)}
+//           <PlayerCard
+//             player={players[4]}
+//             onClick={() => handleCardClick(4)}
+//             isSelected={mode !== null}
+//             isCaptain={4 === captainIndex}
+//           />
 //         </div>
 
-//         {/* Subs */}
+//         {/* Substitutes */}
 //         <div>
-//           <p className="font-semibold mb-2">Subs:</p>
+//           <p className="text-white text-center font-semibold mb-1">Subs</p>
 //           <div className="grid grid-cols-2 gap-2">
-//             {players.slice(5, 7).map((player, index) => renderPlayerCard(player, index + 5))}
+//             {players.slice(5, 7).map((player, index) => (
+//               <PlayerCard
+//                 key={index + 5}
+//                 player={player}
+//                 onClick={() => handleCardClick(index + 5)}
+//                 isSelected={mode !== null}
+//                 isCaptain={index + 5 === captainIndex}
+//               />
+//             ))}
 //           </div>
 //         </div>
 //       </div>
 
-//       <div className="flex justify-between gap-2">
+//       {/* Controls */}
+//       <div className="flex justify-between gap-2 mt-4">
 //         <Button
 //           variant={mode === "captain" ? "default" : "outline"}
 //           onClick={() => toggleMode("captain")}
