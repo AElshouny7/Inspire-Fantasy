@@ -2,10 +2,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import PlayerCard from "@/components/PlayerCard";
 import { toast } from "sonner";
-
+import PlayerCard from "@/components/PlayerCard";
 import { callBackend } from "@/lib/api";
 
 const initialPlayers = Array(7).fill(null);
@@ -22,20 +20,17 @@ export default function Home() {
 
   const teamName = localStorage.getItem("teamName") || "";
   const userName = localStorage.getItem("name") || "";
+  const userId = localStorage.getItem("userId")?.trim();
 
   const navigate = useNavigate();
   const location = useLocation();
-  const userId = localStorage.getItem("userId")?.trim();
 
   useEffect(() => {
     async function fetchData() {
       if (!userId) return;
 
-      console.log("Fetching data for user: ", userId);
-
       const res = await callBackend("viewMyPlayers", { userId });
       if (res.status === "success") {
-        console.log("Fetched players: ", res.players);
         toast.success("Fetched players successfully");
 
         const gkMain = res.players.find((p) => p.isGK && !p.isSub);
@@ -43,25 +38,25 @@ export default function Home() {
         const subs = res.players.filter((p) => p.isSub);
 
         const sortedPlayers = [
-          ...outfieldMain.slice(0, 4), // 0–3 outfield starters
-          gkMain || null, // 4 goalkeeper
-          ...subs.slice(0, 2), // 5–6 subs
+          ...outfieldMain.slice(0, 4), // 0–3 outfield
+          gkMain || null,             // 4 GK
+          ...subs.slice(0, 2),        // 5–6 subs
         ];
 
-        // Pad to ensure exactly 7 slots
         while (sortedPlayers.length < 7) sortedPlayers.push(null);
         setPlayers(sortedPlayers);
 
-        setCaptainIndex(res.players.findIndex((p) => p.isCaptain));
+        const captain = res.players.find((p) => p.isCaptain);
+        setCaptainIndex(captain ? sortedPlayers.findIndex(p => p?.id === captain.id) : null);
         setTotalPoints(res.totalPoints || 0);
         setRoundPoints(res.roundPoints || 0);
         setTransfersUsed(res.transfersUsed || 0);
         setRoundName(res.round || "N/A");
       } else {
-        console.error("Error fetching data: ", res.message);
         toast.error(res.message);
       }
     }
+
     fetchData();
   }, [location.state?.updatedPlayers]);
 
@@ -82,7 +77,7 @@ export default function Home() {
           selectedPlayers: players,
           transferIndex: index,
           filter,
-          mode: "transfer", // ✅ pass the mode
+          mode: "transfer",
         },
       });
     } else if (mode === "captain") {
@@ -109,7 +104,7 @@ export default function Home() {
           selectedPlayers: players,
           transferIndex: index,
           filter,
-          mode: "add", // ✅ assume default is add mode
+          mode: "add",
         },
       });
     }
@@ -122,24 +117,13 @@ export default function Home() {
   const captainName = players[captainIndex]?.name || "None";
 
   const renderPlayerCard = (player, index) => (
-    <Card
+    <PlayerCard
       key={index}
-      className={`h-24 flex items-center justify-center cursor-pointer border-2 ${
-        mode === "captain" || mode === "transfer"
-          ? "border-blue-400"
-          : "border-dashed border-gray-300"
-      } ${index === captainIndex ? "bg-yellow-100" : ""}`}
+      player={player}
+      isCaptain={index === captainIndex}
       onClick={() => handleCardClick(index)}
-    >
-      {player ? (
-        <span className="text-center text-sm">
-          {player.name} <br /> {player.team} <br /> {player.roundPoints} <br />{" "}
-          {player.totalPoints}
-        </span>
-      ) : (
-        <span className="text-2xl text-gray-400">+</span>
-      )}
-    </Card>
+      mode={mode}
+    />
   );
 
   return (
@@ -165,30 +149,24 @@ export default function Home() {
       <div className="mb-4 space-y-4">
         {/* First row */}
         <div className="grid grid-cols-2 gap-2">
-          {players
-            .slice(0, 2)
-            .map((player, index) => renderPlayerCard(player, index))}
+          {players.slice(0, 2).map((player, index) => renderPlayerCard(player, index))}
         </div>
 
         {/* Second row */}
         <div className="grid grid-cols-2 gap-2">
-          {players
-            .slice(2, 4)
-            .map((player, index) => renderPlayerCard(player, index + 2))}
+          {players.slice(2, 4).map((player, index) => renderPlayerCard(player, index + 2))}
         </div>
 
-        {/* Centered 5th card (GK) */}
+        {/* Centered GK card */}
         <div className="flex justify-center">
           {renderPlayerCard(players[4], 4)}
         </div>
 
-        {/* Subs section */}
+        {/* Subs */}
         <div>
           <p className="font-semibold mb-2">Subs:</p>
           <div className="grid grid-cols-2 gap-2">
-            {players
-              .slice(5, 7)
-              .map((player, index) => renderPlayerCard(player, index + 5))}
+            {players.slice(5, 7).map((player, index) => renderPlayerCard(player, index + 5))}
           </div>
         </div>
       </div>
