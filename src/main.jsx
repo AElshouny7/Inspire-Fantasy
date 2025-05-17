@@ -7,9 +7,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <App />
-      <Toaster position="top-center" richColors />
-    </ThemeProvider>
+    {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
+    <App />
+    <Toaster position="top-center" richColors />
+    {/* </ThemeProvider> */}
   </StrictMode>
 );
