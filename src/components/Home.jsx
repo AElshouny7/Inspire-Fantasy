@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-
+import PlayerCard from "@/components/PlayerCard";
 import { callBackend } from "@/lib/api";
 
 const initialPlayers = Array(7).fill(null);
