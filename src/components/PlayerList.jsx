@@ -64,6 +64,9 @@ export default function PlayerList() {
       if (response.status === "success") {
         const newPlayers = [...selectedPlayers];
         newPlayers[transferIndex] = player;
+
+        toast.success(`Successfully transferred ${player.name} to your team!`);
+
         navigate("/home", { state: { updatedPlayers: newPlayers } });
       } else {
         toast.error(response.message);
@@ -82,6 +85,9 @@ export default function PlayerList() {
       if (response.status === "success") {
         const newPlayers = [...selectedPlayers];
         newPlayers[transferIndex] = player;
+
+        toast.success(`Successfully added ${player.name} to your team!`);
+
         navigate("/home", { state: { updatedPlayers: newPlayers } });
       } else {
         toast.error(response.message);

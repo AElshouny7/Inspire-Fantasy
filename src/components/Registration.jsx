@@ -61,7 +61,7 @@ export default function Registration({ setUserId }) {
             />
             <Input
               className="bg-white dark:bg-gray-800 dark:text-white"
-              placeholder="Team Name"
+              placeholder="Fantasy Team Name "
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
               required

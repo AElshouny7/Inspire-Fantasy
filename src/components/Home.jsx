@@ -27,34 +27,16 @@ export default function Home() {
   const location = useLocation();
 
   useEffect(() => {
-    const updatedPlayers = location.state?.updatedPlayers;
-
-    if (updatedPlayers) {
-      // ✅ Show instantly
-      setPlayers(updatedPlayers);
-      setCaptainIndex(updatedPlayers.findIndex((p) => p?.isCaptain));
-    }
-
-    // 🔄 Always re-fetch in background (for correctness)
     async function fetchData() {
       if (!userId) return;
 
       const res = await callBackend("viewMyPlayers", { userId });
       if (res.status === "success") {
-        const gkMain = res.players.find((p) => p.isGK && !p.isSub);
-        const outfieldMain = res.players.filter((p) => !p.isGK && !p.isSub);
-        const subs = res.players.filter((p) => p.isSub);
+        const { sorted, captainIndex } = sortPlayers(res.players);
+        console.log("Sorted fetch Players:", sorted);
+        setPlayers(sorted);
+        setCaptainIndex(captainIndex);
 
-        const sortedPlayers = [
-          ...outfieldMain.slice(0, 4),
-          gkMain || null,
-          ...subs.slice(0, 2),
-        ];
-
-        while (sortedPlayers.length < 7) sortedPlayers.push(null);
-        setPlayers(sortedPlayers);
-
-        setCaptainIndex(res.players.findIndex((p) => p.isCaptain));
         setTotalPoints(res.totalPoints || 0);
         setRoundPoints(res.roundPoints || 0);
         setTransfersUsed(res.transfersUsed || 0);
@@ -66,6 +48,29 @@ export default function Home() {
 
     fetchData(); // ✅ always revalidate, even after setting instant view
   }, [location.state?.updatedPlayers]);
+
+  function sortPlayers(players) {
+    const safe = players.filter((p) => p && typeof p === "object");
+    const sorted = Array(7).fill(null);
+
+    const outfieldMain = safe.filter((p) => !p.isGK && !p.isSub);
+    const gkMain = safe.find((p) => p.isGK && !p.isSub);
+    const subs = safe.filter((p) => p.isSub);
+
+    outfieldMain.forEach((p, i) => {
+      if (i < 4) sorted[i] = p;
+    });
+    sorted[4] = gkMain || null;
+    subs.forEach((p, i) => {
+      if (i < 2) sorted[5 + i] = p;
+    });
+
+    // 🔍 Map captain to their new index in the sorted list
+    const captainId = safe.find((p) => p.isCaptain)?.id;
+    const captainIndex = sorted.findIndex((p) => p?.id === captainId);
+
+    return { sorted, captainIndex };
+  }
 
   const isSub = (index) => index === 5 || index === 6;
   const isOutfield = (index) => index >= 0 && index <= 3;
@@ -181,7 +186,10 @@ export default function Home() {
         className="relative w-full max-w-2xl mx-auto p-4 rounded-xl space-y-4 bg-no-repeat bg-cover bg-center"
         style={{ backgroundImage: `url(${pitch})` }}
       >
-        <div className="grid grid-cols-2 gap-2" style={{ justifyItems: "center" }}>
+        <div
+          className="grid grid-cols-2 gap-2"
+          style={{ justifyItems: "center" }}
+        >
           {[0, 1].map((i) => (
             <PlayerCard
               key={i}
@@ -193,7 +201,10 @@ export default function Home() {
             />
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-2" style={{ justifyItems: "center" }}>
+        <div
+          className="grid grid-cols-2 gap-2"
+          style={{ justifyItems: "center" }}
+        >
           {[2, 3].map((i) => (
             <PlayerCard
               key={i}
@@ -219,7 +230,10 @@ export default function Home() {
       {/* Subs outside pitch */}
       <div className="mt-4">
         <p className="text-center font-semibold mb-2">Substitutes</p>
-        <div className="grid grid-cols-2 gap-2 max-w-xs mx-auto" style={{ justifyItems: "center" }}>
+        <div
+          className="grid grid-cols-2 gap-2 max-w-xs mx-auto"
+          style={{ justifyItems: "center" }}
+        >
           {[5, 6].map((i) => (
             <PlayerCard
               key={i}
@@ -254,8 +268,6 @@ export default function Home() {
     </div>
   );
 }
-
-
 
 // // components/Home.jsx
 // import { useState, useEffect } from "react";
@@ -503,4 +515,3 @@ export default function Home() {
 //     </div>
 //   );
 // }
-
