@@ -1,27 +1,36 @@
 // components/PlayerCard.jsx
-import teamLogo from "@/assets/inspireman.png"; // adjust path if needed
+import teamLogo from "@/assets/inspireman.png";
 
-export default function PlayerCard({ player, onClick, isSelected, isCaptain, mode }) {
+export default function PlayerCard({
+  player,
+  onClick,
+  isSelected,
+  isCaptain,
+  disabled,
+}) {
   return (
     <div
-    onClick={!disabled ? onClick : undefined}
-    className={`w-28 h-40 rounded-2xl p-2 flex flex-col justify-center items-center text-white cursor-pointer shadow-xl border-2
-      bg-gradient-to-b from-black via-gray-900 to-black
-      ${isCaptain ? "border-yellow-400" : isSelected ? "border-blue-400" : "border-white/10 hover:border-yellow-400"}
-      ${disabled ? "opacity-50 cursor-not-allowed" : ""}
-      transition-transform duration-300`}
+      onClick={onClick}
+      className={`
+        relative w-28 h-40 rounded-2xl p-2 flex flex-col justify-between items-center 
+        text-white cursor-pointer shadow-xl border-2 transition-transform duration-300
+        bg-gradient-to-b from-black via-gray-900 to-black
+        ${
+          isSelected
+            ? "border-yellow-400 scale-105"
+            : "border-white/10 hover:border-yellow-400"
+        }
+        ${""}
+      `}
     >
       {player ? (
         <>
-          {/* Logo */}
+          {/* Team Logo */}
           <img
             src={teamLogo}
             alt="Team logo"
             className="w-6 h-6 mb-1 drop-shadow"
           />
-
-          {/* Player Image Placeholder */}
-          {/* <img src={player.imageUrl} alt={`${player.name} image`} className="w-12 h-12 rounded-full mb-2" /> */}
 
           {/* Captain Star */}
           {isCaptain && (
@@ -43,11 +52,14 @@ export default function PlayerCard({ player, onClick, isSelected, isCaptain, mod
             Round: {player.roundPoints ?? 0} <br />
             Total: {player.totalPoints ?? 0}
           </div>
-
-          
         </>
       ) : (
-        <span className="text-3xl text-gray-500">+</span>
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-4xl text-gray-400">+</div>
+          <div className="text-xs mt-1 text-gray-500 text-center">
+            Add Player
+          </div>
+        </div>
       )}
     </div>
   );
