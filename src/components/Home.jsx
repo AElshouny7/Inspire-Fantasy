@@ -156,7 +156,7 @@ export default function Home() {
         className="relative w-full max-w-2xl mx-auto p-4 rounded-xl space-y-4 bg-no-repeat bg-cover bg-center"
         style={{ backgroundImage: `url(${pitch})` }}
       >
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2" style={{ justifyItems: "center" }}>
           {[0, 1].map((i) => (
             <PlayerCard
               key={i}
@@ -168,7 +168,7 @@ export default function Home() {
             />
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2" style={{ justifyItems: "center" }}>
           {[2, 3].map((i) => (
             <PlayerCard
               key={i}
@@ -194,7 +194,7 @@ export default function Home() {
       {/* Subs outside pitch */}
       <div className="mt-4">
         <p className="text-center font-semibold mb-2">Substitutes</p>
-        <div className="grid grid-cols-2 gap-2 max-w-xs mx-auto">
+        <div className="grid grid-cols-2 gap-2 max-w-xs mx-auto" style={{ justifyItems: "center" }}>
           {[5, 6].map((i) => (
             <PlayerCard
               key={i}
@@ -213,13 +213,15 @@ export default function Home() {
         <Button
           variant={mode === "captain" ? "default" : "outline"}
           onClick={() => toggleMode("captain")}
+          className="bg-white text-black hover:bg-gray-200"
         >
           Select Captain
         </Button>
         <Button
           variant={mode === "transfer" ? "default" : "outline"}
           onClick={() => toggleMode("transfer")}
-        >
+          className="bg-white text-black hover:bg-gray-200"
+          >
           Transfer
         </Button>
         <Button onClick={() => navigate("/leaderboard")}>Leaderboard</Button>
