@@ -56,6 +56,8 @@ export default function PlayerList() {
     const inId = player.id;
 
     if (mode === "transfer") {
+      toast.loading("Transferring player...", { duration: 100 });
+
       const response = await callBackend("transferPlayer", {
         userId,
         outId,
@@ -75,6 +77,8 @@ export default function PlayerList() {
     } else {
       const isSub = transferIndex >= 5;
       const isGK = transferIndex === 4;
+
+      toast.loading("Adding player...", { duration: 100 });
 
       const response = await callBackend("addPlayerToTeam", {
         userId,
@@ -100,20 +104,19 @@ export default function PlayerList() {
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">All Players</h2>
 
-      <div className="grid grid-cols-3 gap-3" style={{ justifyItems: "center" }}>
+      <div
+        className="grid grid-cols-3 gap-3"
+        style={{ justifyItems: "center" }}
+      >
         {filteredPlayers.map((player) => (
           <PlayerCard
             key={player.id}
-            className={`p-4 cursor-pointer ${
-              isPlayerSelected(player)
-                ? "bg-gray-200 cursor-not-allowed"
-                : "hover:bg-blue-100"
-            }`}
+            player={player} // ✅ missing before
             onClick={() => handleSelect(player)}
-          >
-            <p className="font-semibold">{player.name}</p>
-            <p className="text-sm text-gray-600">{player.team}</p>
-          </PlayerCard>
+            isSelected={isPlayerSelected(player)}
+            isCaptain={false}
+            disabled={isPlayerSelected(player)}
+          />
         ))}
       </div>
     </div>

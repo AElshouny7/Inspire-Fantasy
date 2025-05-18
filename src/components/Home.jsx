@@ -12,7 +12,7 @@ const initialPlayers = Array(7).fill(null);
 
 export default function Home() {
   const [players, setPlayers] = useState(initialPlayers);
-  const [mode, setMode] = useState(null); // null, 'transfer', 'captain'
+  const [mode, setMode] = useState(null); // null, 'transfer', 'captain' , 'substitute'
   const [captainIndex, setCaptainIndex] = useState(null);
   const [transferIndex, setTransferIndex] = useState(null);
   const [totalPoints, setTotalPoints] = useState(0);
@@ -134,6 +134,35 @@ export default function Home() {
           setTransferIndex(null);
         }
       }
+    } else if (mode === "substitute") {
+      if (!isSub(index)) {
+        setTransferIndex(index); // choose any main player (including GK at index 4)
+      } else if (isSub(index) && transferIndex !== null) {
+        // perform substitution
+        const playerOutId = players[transferIndex]?.id;
+        const subInId = players[index]?.id;
+
+        const res = await callBackend("substitutePlayer", {
+          userId,
+          playerOutId,
+          subInId,
+        });
+
+        if (res.status === "success") {
+          const updated = [...players];
+          [updated[transferIndex], updated[index]] = [
+            updated[index],
+            updated[transferIndex],
+          ];
+          setPlayers(updated);
+          toast.success("Substitution successful!");
+        } else {
+          toast.error(res.message);
+        }
+
+        setTransferIndex(null);
+        setMode(null);
+      }
     }
   };
 
@@ -149,12 +178,20 @@ export default function Home() {
       if (transferIndex === null) return true;
       if (isSub(transferIndex)) return isOutfield(index);
     }
+    if (mode === "substitute") {
+      if (transferIndex === null) return !isSub(index); // any main player (0–4)
+      else return isSub(index); // only sub allowed as second click
+    }
+
     return false;
   };
 
   const isHighlighted = (index) => {
     if (mode === "transfer" && isSub(transferIndex)) {
       return isOutfield(index);
+    }
+    if (mode === "substitute" && transferIndex !== null) {
+      return isSub(index);
     }
     return false;
   };
@@ -229,15 +266,17 @@ export default function Home() {
       </div>
 
       {/* Subs outside pitch */}
-      <div className="mt-4" 
-      style={{
-        backgroundImage: `url(${bench})`,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "bottom center",
-        backgroundSize: "contain",
-        paddingBottom: "10%", 
-        borderRadius: "10%",
-      }}>
+      <div
+        className="mt-4"
+        style={{
+          backgroundImage: `url(${bench})`,
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "bottom center",
+          backgroundSize: "contain",
+          paddingBottom: "10%",
+          borderRadius: "10%",
+        }}
+      >
         <p className="text-center font-semibold mb-2">Substitutes</p>
         <div
           className="grid grid-cols-2 gap-2 max-w-xs mx-auto"
@@ -257,22 +296,37 @@ export default function Home() {
       </div>
 
       {/* Controls */}
-      <div className="flex justify-between gap-2 mt-6">
+      <div className="flex justify-between flex-wrap gap-2 mt-6">
         <Button
-          variant={mode === "captain" ? "default" : "outline"}
           onClick={() => toggleMode("captain")}
-          className="bg-white text-black hover:bg-gray-200"
+          className={`hover:bg-gray-200 text-black ${
+            mode === "captain" ? "bg-[#ffce11]" : "bg-white"
+          }`}
         >
           Select Captain
         </Button>
         <Button
-          variant={mode === "transfer" ? "default" : "outline"}
           onClick={() => toggleMode("transfer")}
-          className="bg-white text-black hover:bg-gray-200"
+          className={`hover:bg-gray-200 text-black ${
+            mode === "transfer" ? "bg-[#ffce11]" : "bg-white"
+          }`}
         >
           Transfer
         </Button>
-        <Button onClick={() => navigate("/leaderboard")}>Leaderboard</Button>
+        <Button
+          onClick={() => toggleMode("substitute")}
+          className={`hover:bg-gray-200 text-black ${
+            mode === "substitute" ? "bg-[#ffce11]" : "bg-white"
+          }`}
+        >
+          Substitute
+        </Button>
+        <Button
+          onClick={() => navigate("/leaderboard")}
+          className="bg-white text-black hover:bg-gray-200"
+        >
+          Leaderboard
+        </Button>
       </div>
     </div>
   );
