@@ -66,21 +66,21 @@ export default function Home() {
   const handleCardClick = async (index) => {
     const selectedPlayer = players[index];
 
-    // Allow adding a player to empty slot in transfer mode
-    if (!selectedPlayer) {
-      if (mode === "transfer" && isOutfield(index)) {
-        navigate("/players", {
-          state: {
-            selectedPlayers: players,
-            transferIndex: index,
-            filter: index === 4 ? "gk" : "outfield",
-            mode: "transfer",
-          },
-        });
-      }
+    // ✅ Allow adding a player in normal mode if slot is empty
+    if (!selectedPlayer && mode === null) {
+      navigate("/players", {
+        state: {
+          selectedPlayers: players,
+          transferIndex: index,
+          isNew: true, // Flag to indicate this is a new player
+          filter: index === 4 ? "gk" : "outfield",
+          mode: "transfer",
+        },
+      });
       return;
     }
 
+    if (!selectedPlayer) return;
     if (!mode) return;
 
     if (mode === "captain") {
@@ -130,7 +130,8 @@ export default function Home() {
   };
 
   const isCardClickable = (index) => {
-    if (mode === "captain") return players[index] && !isSub(index);
+    if (mode === null && !players[index]) return true;
+    if (mode === "captain") return !isSub(index);
     if (mode === "transfer") {
       if (transferIndex === null) return true;
       if (isSub(transferIndex)) return isOutfield(index);
@@ -216,7 +217,7 @@ export default function Home() {
               onClick={() => handleCardClick(i)}
               isSelected={i === transferIndex}
               isCaptain={i === captainIndex}
-              disabled={mode !== "transfer"}
+              disabled={!isCardClickable(i)}
             />
           ))}
         </div>
@@ -313,6 +314,20 @@ export default function Home() {
 
 //   const handleCardClick = async (index) => {
 //     const selectedPlayer = players[index];
+
+//     // ✅ Allow adding a player in normal mode if slot is empty
+//     if (!selectedPlayer && mode === null) {
+//       navigate("/players", {
+//         state: {
+//           selectedPlayers: players,
+//           transferIndex: index,
+//           filter: index === 4 ? "gk" : "outfield",
+//           mode: "transfer",
+//         },
+//       });
+//       return;
+//     }
+
 //     if (!selectedPlayer) return;
 
 //     if (!mode) return;
@@ -364,6 +379,7 @@ export default function Home() {
 //   };
 
 //   const isCardClickable = (index) => {
+//     if (mode === null && !players[index]) return true;
 //     if (mode === "captain") return !isSub(index);
 //     if (mode === "transfer") {
 //       if (transferIndex === null) return true;
@@ -450,7 +466,7 @@ export default function Home() {
 //               onClick={() => handleCardClick(i)}
 //               isSelected={i === transferIndex}
 //               isCaptain={i === captainIndex}
-//               disabled={mode !== "transfer"}
+//               disabled={!isCardClickable(i)}
 //             />
 //           ))}
 //         </div>
@@ -469,7 +485,7 @@ export default function Home() {
 //           variant={mode === "transfer" ? "default" : "outline"}
 //           onClick={() => toggleMode("transfer")}
 //           className="bg-white text-black hover:bg-gray-200"
-//           >
+//         >
 //           Transfer
 //         </Button>
 //         <Button onClick={() => navigate("/leaderboard")}>Leaderboard</Button>
@@ -477,3 +493,4 @@ export default function Home() {
 //     </div>
 //   );
 // }
+
