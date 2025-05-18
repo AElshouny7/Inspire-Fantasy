@@ -1,5 +1,5 @@
 // components/PlayerCard.jsx
-import teamLogo from "@/assets/inspireman.png"; 
+import teamLogo from "@/assets/inspire man.png"; 
 
 export default function PlayerCard({ player, onClick, isSelected, isCaptain, disabled }) {
   return (

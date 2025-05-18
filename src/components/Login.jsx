@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // ← Add Link
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,17 @@ export default function Login({ setUserId }) {
           >
             Clear Local Storage
           </Button>
+
+          {/* ✅ Registration link */}
+          <div className="text-center mt-6 text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link
+              to="/"
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Register here
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

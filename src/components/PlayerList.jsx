@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
 import { callBackend } from "@/lib/api";
+import PlayerCard from "./PLayerCard";
 
 export default function PlayerList() {
   const navigate = useNavigate();
@@ -99,9 +100,9 @@ export default function PlayerList() {
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">All Players</h2>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-3" style={{ justifyItems: "center" }}>
         {filteredPlayers.map((player) => (
-          <Card
+          <PlayerCard
             key={player.id}
             className={`p-4 cursor-pointer ${
               isPlayerSelected(player)
@@ -112,7 +113,7 @@ export default function PlayerList() {
           >
             <p className="font-semibold">{player.name}</p>
             <p className="text-sm text-gray-600">{player.team}</p>
-          </Card>
+          </PlayerCard>
         ))}
       </div>
     </div>

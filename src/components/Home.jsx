@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import PlayerCard from "@/components/PlayerCard";
 import { callBackend } from "@/lib/api";
 import pitch from "@/assets/pitch.jpg";
+import bench from "@/assets/bench.png";
 
 const initialPlayers = Array(7).fill(null);
 
@@ -228,7 +229,15 @@ export default function Home() {
       </div>
 
       {/* Subs outside pitch */}
-      <div className="mt-4">
+      <div className="mt-4" 
+      style={{
+        backgroundImage: `url(${bench})`,
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "bottom center",
+        backgroundSize: "contain",
+        paddingBottom: "10%", 
+        borderRadius: "10%",
+      }}>
         <p className="text-center font-semibold mb-2">Substitutes</p>
         <div
           className="grid grid-cols-2 gap-2 max-w-xs mx-auto"
