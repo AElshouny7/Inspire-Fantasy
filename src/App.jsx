@@ -9,6 +9,8 @@ import Registration from "@/components/Registration";
 import Home from "@/components/Home";
 import PlayerList from "@/components/PlayerList";
 import Leaderboard from "@/components/Leaderboard";
+import Login from "@/components/Login";
+
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function App() {
@@ -36,6 +38,17 @@ function App() {
             )
           }
         />
+        <Route
+          path="/login"
+          element={
+            userId ? (
+              <Navigate to="/home" replace />
+            ) : (
+              <Login setUserId={setUserId} />
+            )
+          }
+        />
+
         <Route
           path="/home"
           element={
