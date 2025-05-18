@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
 import { callBackend } from "@/lib/api";
-import PlayerCard from "@/PlayerCard";
+import PlayerCard from "@/components/PlayerCard";
 
 export default function PlayerList() {
   const navigate = useNavigate();
