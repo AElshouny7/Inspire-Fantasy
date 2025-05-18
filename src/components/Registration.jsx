@@ -15,7 +15,7 @@ export default function Registration({ setUserId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (loading) return; // prevent double submit
+    if (loading) return;
     setLoading(true);
 
     try {
@@ -43,22 +43,24 @@ export default function Registration({ setUserId }) {
       toast.error(`Network error: ${err.message}`);
     }
 
-    setLoading(false); // re-enable only if you want retry on failure
+    setLoading(false);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-md p-6">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-black transition-colors">
+      <Card className="w-full max-w-md p-6 bg-white dark:bg-gray-900 text-black dark:text-white shadow-xl">
         <CardContent>
-          <h2 className="text-xl font-bold mb-4">Register</h2>
+          <h2 className="text-xl font-bold mb-4 text-center">Register</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
+              className="bg-white dark:bg-gray-800 dark:text-white"
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
             />
             <Input
+              className="bg-white dark:bg-gray-800 dark:text-white"
               placeholder="Team Name"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
