@@ -81,7 +81,6 @@ export default function Home() {
           transferIndex: index,
           isNew: true, // Flag to indicate this is a new player
           filter: index === 4 ? "gk" : "outfield",
-          mode: "transfer",
         },
       });
       return;
