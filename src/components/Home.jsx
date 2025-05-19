@@ -194,7 +194,11 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white p-4 relative overflow-hidden">
       {(loading || isNavigating) && (
         <div className="absolute inset-0 bg-black/80 z-50 flex flex-col items-center justify-center">
-          <img src={inspireman} alt="Loading..." className="w-50 h-50 mb-4 animate-bounce" />
+          <img
+            src={inspireman}
+            alt="Loading..."
+            className="w-50 h-50 mb-4 animate-bounce"
+          />
           <p className="text-yellow-400 text-lg">Loading...</p>
         </div>
       )}
@@ -224,11 +228,28 @@ export default function Home() {
         className="relative w-full max-w-2xl mx-auto p-4 rounded-xl space-y-4 bg-no-repeat bg-cover bg-center"
         style={{ backgroundImage: `url(${pitch})` }}
       >
-        <div className="grid grid-cols-2 gap-2" style={{ justifyItems: "center" }}>
+        <div
+          className="grid grid-cols-2 gap-2"
+          style={{ justifyItems: "center" }}
+        >
           {[0, 1].map((i) => (
             <PlayerCard
               key={i}
-              player={players[i]}
+              player={
+                players[i]
+                  ? {
+                      ...players[i],
+                      roundPoints:
+                        i === captainIndex
+                          ? (players[i].roundPoints || 0) * 2
+                          : players[i].roundPoints,
+                      totalPoints:
+                        i === captainIndex
+                          ? (players[i].totalPoints || 0) * 2
+                          : players[i].totalPoints,
+                    }
+                  : null
+              }
               onClick={() => handleCardClick(i)}
               isSelected={isHighlighted(i)}
               isCaptain={i === captainIndex}
@@ -236,11 +257,28 @@ export default function Home() {
             />
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-2" style={{ justifyItems: "center" }}>
+        <div
+          className="grid grid-cols-2 gap-2"
+          style={{ justifyItems: "center" }}
+        >
           {[2, 3].map((i) => (
             <PlayerCard
               key={i}
-              player={players[i]}
+              player={
+                players[i]
+                  ? {
+                      ...players[i],
+                      roundPoints:
+                        i === captainIndex
+                          ? (players[i].roundPoints || 0) * 2
+                          : players[i].roundPoints,
+                      totalPoints:
+                        i === captainIndex
+                          ? (players[i].totalPoints || 0) * 2
+                          : players[i].totalPoints,
+                    }
+                  : null
+              }
               onClick={() => handleCardClick(i)}
               isSelected={isHighlighted(i)}
               isCaptain={i === captainIndex}
@@ -250,7 +288,21 @@ export default function Home() {
         </div>
         <div className="flex justify-center">
           <PlayerCard
-            player={players[4]}
+            player={
+              players[4]
+                ? {
+                    ...players[4],
+                    roundPoints:
+                      4 === captainIndex
+                        ? (players[4].roundPoints || 0) * 2
+                        : players[4].roundPoints,
+                    totalPoints:
+                      4 === captainIndex
+                        ? (players[4].totalPoints || 0) * 2
+                        : players[4].totalPoints,
+                  }
+                : null
+            }
             onClick={() => handleCardClick(4)}
             isSelected={isHighlighted(4)}
             isCaptain={4 === captainIndex}
@@ -271,7 +323,10 @@ export default function Home() {
         }}
       >
         <p className="text-center font-semibold mb-2">Substitutes</p>
-        <div className="grid grid-cols-2 gap-2 max-w-xs mx-auto" style={{ justifyItems: "center" }}>
+        <div
+          className="grid grid-cols-2 gap-2 max-w-xs mx-auto"
+          style={{ justifyItems: "center" }}
+        >
           {[5, 6].map((i) => (
             <PlayerCard
               key={i}
@@ -288,19 +343,25 @@ export default function Home() {
       <div className="flex justify-between flex-wrap gap-2 mt-6">
         <Button
           onClick={() => toggleMode("captain")}
-          className={`hover:bg-gray-200 text-black ${mode === "captain" ? "bg-[#ffce11]" : "bg-white"}`}
+          className={`hover:bg-gray-200 text-black ${
+            mode === "captain" ? "bg-[#ffce11]" : "bg-white"
+          }`}
         >
           Select Captain
         </Button>
         <Button
           onClick={() => toggleMode("transfer")}
-          className={`hover:bg-gray-200 text-black ${mode === "transfer" ? "bg-[#ffce11]" : "bg-white"}`}
+          className={`hover:bg-gray-200 text-black ${
+            mode === "transfer" ? "bg-[#ffce11]" : "bg-white"
+          }`}
         >
           Transfer
         </Button>
         <Button
           onClick={() => toggleMode("substitute")}
-          className={`hover:bg-gray-200 text-black ${mode === "substitute" ? "bg-[#ffce11]" : "bg-white"}`}
+          className={`hover:bg-gray-200 text-black ${
+            mode === "substitute" ? "bg-[#ffce11]" : "bg-white"
+          }`}
         >
           Substitute
         </Button>
@@ -314,8 +375,6 @@ export default function Home() {
     </div>
   );
 }
-
-
 
 // // components/Home.jsx
 // import { useState, useEffect } from "react";
