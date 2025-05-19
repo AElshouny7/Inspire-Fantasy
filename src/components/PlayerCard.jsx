@@ -1,9 +1,14 @@
 // components/PlayerCard.jsx
-import teamLogo from "@/assets/inspire man.png"; 
-import ayman from "@/assets/P23 - Mohamed Ayman.jpg"; 
+import teamLogo from "@/assets/inspire man.png";
+import ayman from "@/assets/P23 - Mohamed Ayman.jpg";
 
-
-export default function PlayerCard({ player, onClick, isSelected, isCaptain, disabled }) {
+export default function PlayerCard({
+  player,
+  onClick,
+  isSelected,
+  isCaptain,
+  disabled,
+}) {
   return (
     <div
       onClick={disabled ? undefined : onClick}
@@ -11,16 +16,21 @@ export default function PlayerCard({ player, onClick, isSelected, isCaptain, dis
         relative w-28 h-40 rounded-2xl p-2 flex flex-col justify-center items-center 
         text-white cursor-pointer shadow-xl border-2 transition-transform duration-300
         bg-gradient-to-b from-black via-gray-900 to-black
-        ${isSelected ? "border-yellow-400 scale-105" : "border-white/10 hover:border-yellow-400"}
+        ${
+          isSelected
+            ? "border-yellow-400 scale-105"
+            : "border-white/10 hover:border-yellow-400"
+        }
         ${disabled ? "opacity-40 cursor-not-allowed" : ""}
       `}
     >
       {player ? (
         <>
           {/* Inspire Man logo top-left */}
-          <img src={teamLogo}
-          alt="InspireMan"
-          className="absolute top-1 left-1 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none select-none" 
+          <img
+            src={teamLogo}
+            alt="InspireMan"
+            className="absolute top-1 left-1 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none select-none"
           />
 
           {/* Captain Star top-right */}
@@ -32,7 +42,10 @@ export default function PlayerCard({ player, onClick, isSelected, isCaptain, dis
 
           {/* Player image */}
           <img
-            src={ayman} // Replace with player.imageUrl fetch from backend
+            src={`/players/${player.id} - ${player.name}.jpg`}
+            onError={(e) => {
+              e.target.src = "/players/Default.png";
+            }}
             alt={player.name}
             className="w-16 h-16 rounded-full object-cover mb-1"
           />
@@ -44,8 +57,12 @@ export default function PlayerCard({ player, onClick, isSelected, isCaptain, dis
 
           {/* Bottom Row Info */}
           <div className="absolute bottom-1 left-1 text-[10px] text-white text-left leading-tight">
-            <div className="wrap-text max-w-xs whitespace-normal break-words">{player.team}</div>
-            <div className="text-gray-400 italic">{player.isGK ? "GK" : "Player"}</div>
+            <div className="wrap-text max-w-xs whitespace-normal break-words">
+              {player.team}
+            </div>
+            <div className="text-gray-400 italic">
+              {player.isGK ? "GK" : "Player"}
+            </div>
           </div>
 
           <div className="absolute bottom-1 right-1 text-[10px] text-right text-white leading-tight">
@@ -56,11 +73,11 @@ export default function PlayerCard({ player, onClick, isSelected, isCaptain, dis
       ) : (
         <div className="flex flex-col items-center justify-center h-full">
           <div className="text-4xl text-gray-400">+</div>
-          <div className="text-xs mt-1 text-gray-500 text-center">Add Player</div>
+          <div className="text-xs mt-1 text-gray-500 text-center">
+            Add Player
+          </div>
         </div>
       )}
     </div>
   );
 }
-
-
