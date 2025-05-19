@@ -7,18 +7,21 @@ import PlayerCard from "@/components/PlayerCard";
 import { callBackend } from "@/lib/api";
 import pitch from "@/assets/pitch.jpg";
 import bench from "@/assets/bench.png";
+import inspireman from "@/assets/inspire man.png"; // 👈 your loading image
 
 const initialPlayers = Array(7).fill(null);
 
 export default function Home() {
   const [players, setPlayers] = useState(initialPlayers);
-  const [mode, setMode] = useState(null); // null, 'transfer', 'captain' , 'substitute'
+  const [mode, setMode] = useState(null);
   const [captainIndex, setCaptainIndex] = useState(null);
   const [transferIndex, setTransferIndex] = useState(null);
   const [totalPoints, setTotalPoints] = useState(0);
   const [roundPoints, setRoundPoints] = useState(0);
   const [transfersUsed, setTransfersUsed] = useState(0);
   const [roundName, setRoundName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const teamName = localStorage.getItem("teamName") || "";
   const userName = localStorage.getItem("name") || "";
@@ -31,10 +34,10 @@ export default function Home() {
     async function fetchData() {
       if (!userId) return;
 
+      setLoading(true);
       const res = await callBackend("viewMyPlayers", { userId });
       if (res.status === "success") {
         const { sorted, captainIndex } = sortPlayers(res.players);
-        console.log("Sorted fetch Players:", sorted);
         setPlayers(sorted);
         setCaptainIndex(captainIndex);
 
@@ -45,9 +48,10 @@ export default function Home() {
       } else {
         toast.error(res.message);
       }
+      setLoading(false);
     }
 
-    fetchData(); // ✅ always revalidate, even after setting instant view
+    fetchData();
   }, [location.state?.updatedPlayers]);
 
   function sortPlayers(players) {
@@ -66,7 +70,6 @@ export default function Home() {
       if (i < 2) sorted[5 + i] = p;
     });
 
-    // 🔍 Map captain to their new index in the sorted list
     const captainId = safe.find((p) => p.isCaptain)?.id;
     const captainIndex = sorted.findIndex((p) => p?.id === captainId);
 
@@ -81,19 +84,19 @@ export default function Home() {
 
     // ✅ Allow adding a player in normal mode if slot is empty
     if (!selectedPlayer && mode === null) {
+      setIsNavigating(true);
       navigate("/players", {
         state: {
           selectedPlayers: players,
           transferIndex: index,
-          isNew: true, // Flag to indicate this is a new player
+          isNew: true,
           filter: index === 4 ? "gk" : "outfield",
         },
       });
       return;
     }
 
-    if (!selectedPlayer) return;
-    if (!mode) return;
+    if (!selectedPlayer || !mode) return;
 
     if (mode === "captain") {
       if (isSub(index)) return;
@@ -110,10 +113,10 @@ export default function Home() {
       setMode(null);
     } else if (mode === "transfer") {
       if (isSub(index)) {
-        setTransferIndex(index); // select sub first
+        setTransferIndex(index);
       } else if (isOutfield(index)) {
         if (transferIndex === null) {
-          // initiate transfer
+          setIsNavigating(true);
           navigate("/players", {
             state: {
               selectedPlayers: players,
@@ -123,7 +126,6 @@ export default function Home() {
             },
           });
         } else if (isSub(transferIndex)) {
-          // Swap sub and outfield player
           const updated = [...players];
           [updated[transferIndex], updated[index]] = [
             updated[index],
@@ -136,9 +138,8 @@ export default function Home() {
       }
     } else if (mode === "substitute") {
       if (!isSub(index)) {
-        setTransferIndex(index); // choose any main player (including GK at index 4)
-      } else if (isSub(index) && transferIndex !== null) {
-        // perform substitution
+        setTransferIndex(index);
+      } else if (transferIndex !== null) {
         const playerOutId = players[transferIndex]?.id;
         const subInId = players[index]?.id;
 
@@ -179,10 +180,9 @@ export default function Home() {
       if (isSub(transferIndex)) return isOutfield(index);
     }
     if (mode === "substitute") {
-      if (transferIndex === null) return !isSub(index); // any main player (0–4)
-      else return isSub(index); // only sub allowed as second click
+      if (transferIndex === null) return !isSub(index);
+      else return isSub(index);
     }
-
     return false;
   };
 
@@ -197,7 +197,14 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
+    <div className="min-h-screen bg-black text-white p-4 relative overflow-hidden">
+      {(loading || isNavigating) && (
+        <div className="absolute inset-0 bg-black/80 z-50 flex flex-col items-center justify-center">
+          <img src={inspireman} alt="Loading..." className="w-50 h-50 mb-4 animate-bounce" />
+          <p className="text-yellow text-lg">Loading...</p>
+        </div>
+      )}
+
       <header className="flex flex-col mb-4 text-sm">
         <div className="flex justify-between mb-1">
           <span>
@@ -219,15 +226,11 @@ export default function Home() {
         {userName} - {teamName}
       </h1>
 
-      {/* Pitch Background */}
       <div
         className="relative w-full max-w-2xl mx-auto p-4 rounded-xl space-y-4 bg-no-repeat bg-cover bg-center"
         style={{ backgroundImage: `url(${pitch})` }}
       >
-        <div
-          className="grid grid-cols-2 gap-2"
-          style={{ justifyItems: "center" }}
-        >
+        <div className="grid grid-cols-2 gap-2" style={{ justifyItems: "center" }}>
           {[0, 1].map((i) => (
             <PlayerCard
               key={i}
@@ -239,10 +242,7 @@ export default function Home() {
             />
           ))}
         </div>
-        <div
-          className="grid grid-cols-2 gap-2"
-          style={{ justifyItems: "center" }}
-        >
+        <div className="grid grid-cols-2 gap-2" style={{ justifyItems: "center" }}>
           {[2, 3].map((i) => (
             <PlayerCard
               key={i}
@@ -265,7 +265,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Subs outside pitch */}
       <div
         className="mt-4"
         style={{
@@ -295,29 +294,22 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Controls */}
       <div className="flex justify-between flex-wrap gap-2 mt-6">
         <Button
           onClick={() => toggleMode("captain")}
-          className={`hover:bg-gray-200 text-black ${
-            mode === "captain" ? "bg-[#ffce11]" : "bg-white"
-          }`}
+          className={`hover:bg-gray-200 text-black ${mode === "captain" ? "bg-[#ffce11]" : "bg-white"}`}
         >
           Select Captain
         </Button>
         <Button
           onClick={() => toggleMode("transfer")}
-          className={`hover:bg-gray-200 text-black ${
-            mode === "transfer" ? "bg-[#ffce11]" : "bg-white"
-          }`}
+          className={`hover:bg-gray-200 text-black ${mode === "transfer" ? "bg-[#ffce11]" : "bg-white"}`}
         >
           Transfer
         </Button>
         <Button
           onClick={() => toggleMode("substitute")}
-          className={`hover:bg-gray-200 text-black ${
-            mode === "substitute" ? "bg-[#ffce11]" : "bg-white"
-          }`}
+          className={`hover:bg-gray-200 text-black ${mode === "substitute" ? "bg-[#ffce11]" : "bg-white"}`}
         >
           Substitute
         </Button>
@@ -332,6 +324,7 @@ export default function Home() {
   );
 }
 
+
 // // components/Home.jsx
 // import { useState, useEffect } from "react";
 // import { useNavigate, useLocation } from "react-router-dom";
@@ -340,12 +333,13 @@ export default function Home() {
 // import PlayerCard from "@/components/PlayerCard";
 // import { callBackend } from "@/lib/api";
 // import pitch from "@/assets/pitch.jpg";
+// import bench from "@/assets/bench.png";
 
 // const initialPlayers = Array(7).fill(null);
 
 // export default function Home() {
 //   const [players, setPlayers] = useState(initialPlayers);
-//   const [mode, setMode] = useState(null); // null, 'transfer', 'captain'
+//   const [mode, setMode] = useState(null); // null, 'transfer', 'captain' , 'substitute'
 //   const [captainIndex, setCaptainIndex] = useState(null);
 //   const [transferIndex, setTransferIndex] = useState(null);
 //   const [totalPoints, setTotalPoints] = useState(0);
@@ -366,22 +360,11 @@ export default function Home() {
 
 //       const res = await callBackend("viewMyPlayers", { userId });
 //       if (res.status === "success") {
-//         toast.success("Fetched players successfully");
+//         const { sorted, captainIndex } = sortPlayers(res.players);
+//         console.log("Sorted fetch Players:", sorted);
+//         setPlayers(sorted);
+//         setCaptainIndex(captainIndex);
 
-//         const gkMain = res.players.find((p) => p.isGK && !p.isSub);
-//         const outfieldMain = res.players.filter((p) => !p.isGK && !p.isSub);
-//         const subs = res.players.filter((p) => p.isSub);
-
-//         const sortedPlayers = [
-//           ...outfieldMain.slice(0, 4),
-//           gkMain || null,
-//           ...subs.slice(0, 2),
-//         ];
-
-//         while (sortedPlayers.length < 7) sortedPlayers.push(null);
-//         setPlayers(sortedPlayers);
-
-//         setCaptainIndex(res.players.findIndex((p) => p.isCaptain));
 //         setTotalPoints(res.totalPoints || 0);
 //         setRoundPoints(res.roundPoints || 0);
 //         setTransfersUsed(res.transfersUsed || 0);
@@ -391,8 +374,31 @@ export default function Home() {
 //       }
 //     }
 
-//     fetchData();
+//     fetchData(); // ✅ always revalidate, even after setting instant view
 //   }, [location.state?.updatedPlayers]);
+
+//   function sortPlayers(players) {
+//     const safe = players.filter((p) => p && typeof p === "object");
+//     const sorted = Array(7).fill(null);
+
+//     const outfieldMain = safe.filter((p) => !p.isGK && !p.isSub);
+//     const gkMain = safe.find((p) => p.isGK && !p.isSub);
+//     const subs = safe.filter((p) => p.isSub);
+
+//     outfieldMain.forEach((p, i) => {
+//       if (i < 4) sorted[i] = p;
+//     });
+//     sorted[4] = gkMain || null;
+//     subs.forEach((p, i) => {
+//       if (i < 2) sorted[5 + i] = p;
+//     });
+
+//     // 🔍 Map captain to their new index in the sorted list
+//     const captainId = safe.find((p) => p.isCaptain)?.id;
+//     const captainIndex = sorted.findIndex((p) => p?.id === captainId);
+
+//     return { sorted, captainIndex };
+//   }
 
 //   const isSub = (index) => index === 5 || index === 6;
 //   const isOutfield = (index) => index >= 0 && index <= 3;
@@ -406,15 +412,14 @@ export default function Home() {
 //         state: {
 //           selectedPlayers: players,
 //           transferIndex: index,
+//           isNew: true, // Flag to indicate this is a new player
 //           filter: index === 4 ? "gk" : "outfield",
-//           mode: "transfer",
 //         },
 //       });
 //       return;
 //     }
 
 //     if (!selectedPlayer) return;
-
 //     if (!mode) return;
 
 //     if (mode === "captain") {
@@ -430,9 +435,7 @@ export default function Home() {
 //         toast.error(res.message);
 //       }
 //       setMode(null);
-//     }
-
-//     else if (mode === "transfer") {
+//     } else if (mode === "transfer") {
 //       if (isSub(index)) {
 //         setTransferIndex(index); // select sub first
 //       } else if (isOutfield(index)) {
@@ -449,11 +452,43 @@ export default function Home() {
 //         } else if (isSub(transferIndex)) {
 //           // Swap sub and outfield player
 //           const updated = [...players];
-//           [updated[transferIndex], updated[index]] = [updated[index], updated[transferIndex]];
+//           [updated[transferIndex], updated[index]] = [
+//             updated[index],
+//             updated[transferIndex],
+//           ];
 //           setPlayers(updated);
 //           toast.success("Substitution successful");
 //           setTransferIndex(null);
 //         }
+//       }
+//     } else if (mode === "substitute") {
+//       if (!isSub(index)) {
+//         setTransferIndex(index); // choose any main player (including GK at index 4)
+//       } else if (isSub(index) && transferIndex !== null) {
+//         // perform substitution
+//         const playerOutId = players[transferIndex]?.id;
+//         const subInId = players[index]?.id;
+
+//         const res = await callBackend("substitutePlayer", {
+//           userId,
+//           playerOutId,
+//           subInId,
+//         });
+
+//         if (res.status === "success") {
+//           const updated = [...players];
+//           [updated[transferIndex], updated[index]] = [
+//             updated[index],
+//             updated[transferIndex],
+//           ];
+//           setPlayers(updated);
+//           toast.success("Substitution successful!");
+//         } else {
+//           toast.error(res.message);
+//         }
+
+//         setTransferIndex(null);
+//         setMode(null);
 //       }
 //     }
 //   };
@@ -470,12 +505,20 @@ export default function Home() {
 //       if (transferIndex === null) return true;
 //       if (isSub(transferIndex)) return isOutfield(index);
 //     }
+//     if (mode === "substitute") {
+//       if (transferIndex === null) return !isSub(index); // any main player (0–4)
+//       else return isSub(index); // only sub allowed as second click
+//     }
+
 //     return false;
 //   };
 
 //   const isHighlighted = (index) => {
 //     if (mode === "transfer" && isSub(transferIndex)) {
 //       return isOutfield(index);
+//     }
+//     if (mode === "substitute" && transferIndex !== null) {
+//       return isSub(index);
 //     }
 //     return false;
 //   };
@@ -492,7 +535,10 @@ export default function Home() {
 //           <span>Transfers Used: {transfersUsed}</span>
 //         </div>
 //         <div className="text-center font-semibold">
-//           Captain: <span className="text-yellow-400">{players[captainIndex]?.name || "None"}</span>
+//           Captain:{" "}
+//           <span className="text-yellow-400">
+//             {players[captainIndex]?.name || "None"}
+//           </span>
 //         </div>
 //       </header>
 
@@ -505,7 +551,10 @@ export default function Home() {
 //         className="relative w-full max-w-2xl mx-auto p-4 rounded-xl space-y-4 bg-no-repeat bg-cover bg-center"
 //         style={{ backgroundImage: `url(${pitch})` }}
 //       >
-//         <div className="grid grid-cols-2 gap-2" style={{ justifyItems: "center" }}>
+//         <div
+//           className="grid grid-cols-2 gap-2"
+//           style={{ justifyItems: "center" }}
+//         >
 //           {[0, 1].map((i) => (
 //             <PlayerCard
 //               key={i}
@@ -517,7 +566,10 @@ export default function Home() {
 //             />
 //           ))}
 //         </div>
-//         <div className="grid grid-cols-2 gap-2" style={{ justifyItems: "center" }}>
+//         <div
+//           className="grid grid-cols-2 gap-2"
+//           style={{ justifyItems: "center" }}
+//         >
 //           {[2, 3].map((i) => (
 //             <PlayerCard
 //               key={i}
@@ -541,9 +593,22 @@ export default function Home() {
 //       </div>
 
 //       {/* Subs outside pitch */}
-//       <div className="mt-4">
+//       <div
+//         className="mt-4"
+//         style={{
+//           backgroundImage: `url(${bench})`,
+//           backgroundRepeat: "no-repeat",
+//           backgroundPosition: "bottom center",
+//           backgroundSize: "contain",
+//           paddingBottom: "10%",
+//           borderRadius: "10%",
+//         }}
+//       >
 //         <p className="text-center font-semibold mb-2">Substitutes</p>
-//         <div className="grid grid-cols-2 gap-2 max-w-xs mx-auto" style={{ justifyItems: "center" }}>
+//         <div
+//           className="grid grid-cols-2 gap-2 max-w-xs mx-auto"
+//           style={{ justifyItems: "center" }}
+//         >
 //           {[5, 6].map((i) => (
 //             <PlayerCard
 //               key={i}
@@ -558,22 +623,37 @@ export default function Home() {
 //       </div>
 
 //       {/* Controls */}
-//       <div className="flex justify-between gap-2 mt-6">
+//       <div className="flex justify-between flex-wrap gap-2 mt-6">
 //         <Button
-//           variant={mode === "captain" ? "default" : "outline"}
 //           onClick={() => toggleMode("captain")}
-//           className="bg-white text-black hover:bg-gray-200"
+//           className={`hover:bg-gray-200 text-black ${
+//             mode === "captain" ? "bg-[#ffce11]" : "bg-white"
+//           }`}
 //         >
 //           Select Captain
 //         </Button>
 //         <Button
-//           variant={mode === "transfer" ? "default" : "outline"}
 //           onClick={() => toggleMode("transfer")}
-//           className="bg-white text-black hover:bg-gray-200"
+//           className={`hover:bg-gray-200 text-black ${
+//             mode === "transfer" ? "bg-[#ffce11]" : "bg-white"
+//           }`}
 //         >
 //           Transfer
 //         </Button>
-//         <Button onClick={() => navigate("/leaderboard")}>Leaderboard</Button>
+//         <Button
+//           onClick={() => toggleMode("substitute")}
+//           className={`hover:bg-gray-200 text-black ${
+//             mode === "substitute" ? "bg-[#ffce11]" : "bg-white"
+//           }`}
+//         >
+//           Substitute
+//         </Button>
+//         <Button
+//           onClick={() => navigate("/leaderboard")}
+//           className="bg-white text-black hover:bg-gray-200"
+//         >
+//           Leaderboard
+//         </Button>
 //       </div>
 //     </div>
 //   );
