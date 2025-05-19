@@ -120,7 +120,7 @@ export default function PlayerList() {
             alt="Loading"
             className="w-50 h-50 mb-4 animate-bounce"
           />
-          <p className="text-gold-500 text-lg font-semibold animate-pulse">
+          <p className="text-yellow-400 text-lg font-semibold animate-pulse">
             Loading...
           </p>
         </div>

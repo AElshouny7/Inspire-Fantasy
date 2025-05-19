@@ -201,7 +201,7 @@ export default function Home() {
       {(loading || isNavigating) && (
         <div className="absolute inset-0 bg-black/80 z-50 flex flex-col items-center justify-center">
           <img src={inspireman} alt="Loading..." className="w-50 h-50 mb-4 animate-bounce" />
-          <p className="text-yellow text-lg">Loading...</p>
+          <p className="text-yellow-400 text-lg">Loading...</p>
         </div>
       )}
 
