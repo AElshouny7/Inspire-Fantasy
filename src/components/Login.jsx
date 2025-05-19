@@ -26,7 +26,7 @@ export default function Login({ setUserId }) {
 
         setUserId(inputId);
         toast.success("✅ Login successful");
-        navigate("/admin", { replace: true });
+        navigate("/home", { replace: true });
       } else {
         toast.error(response.message || "Invalid user ID.");
       }
@@ -71,10 +71,7 @@ export default function Login({ setUserId }) {
           {/* ✅ Registration link */}
           <div className="text-center mt-6 text-sm text-gray-600">
             Don't have an account?{" "}
-            <Link
-              to="/"
-              className="text-blue-600 hover:underline font-medium"
-            >
+            <Link to="/" className="text-blue-600 hover:underline font-medium">
               Register here
             </Link>
           </div>

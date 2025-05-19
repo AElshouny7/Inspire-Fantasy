@@ -56,7 +56,7 @@ export default function PlayerList() {
     const inId = player.id;
 
     if (mode === "transfer") {
-      toast.loading("Transferring player...", { duration: 100 });
+      const transferLoad = toast.loading("Transferring player...");
 
       const response = await callBackend("transferPlayer", {
         userId,
@@ -68,17 +68,19 @@ export default function PlayerList() {
         const newPlayers = [...selectedPlayers];
         newPlayers[transferIndex] = player;
 
+        toast.dismiss(transferLoad);
         toast.success(`Successfully transferred ${player.name} to your team!`);
 
         navigate("/home", { state: { updatedPlayers: newPlayers } });
       } else {
+        toast.dismiss(transferLoad);
         toast.error(response.message);
       }
     } else {
       const isSub = transferIndex >= 5;
       const isGK = transferIndex === 4;
 
-      toast.loading("Adding player...", { duration: 100 });
+      const addLoad = toast.loading("Adding player...");
 
       const response = await callBackend("addPlayerToTeam", {
         userId,
@@ -91,10 +93,12 @@ export default function PlayerList() {
         const newPlayers = [...selectedPlayers];
         newPlayers[transferIndex] = player;
 
+        toast.dismiss(addLoad);
         toast.success(`Successfully added ${player.name} to your team!`);
 
         navigate("/home", { state: { updatedPlayers: newPlayers } });
       } else {
+        toast.dismiss(addLoad);
         toast.error(response.message);
       }
     }
