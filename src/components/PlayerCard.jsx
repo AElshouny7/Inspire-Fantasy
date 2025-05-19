@@ -44,9 +44,9 @@ export default function PlayerCard({ player, onClick, isSelected, isCaptain, dis
 
           {/* Bottom Row Info */}
           <div className="absolute bottom-1 left-1 text-[10px] text-white text-left leading-tight">
-            <div className="wrap-text">{player.team}</div>
+            <div className="wrap-text max-w-xs whitespace-normal break-words">{player.team}</div>
             <div className="text-gray-400 italic">{player.isGK ? "GK" : "Player"}</div>
-            </div>
+          </div>
 
           <div className="absolute bottom-1 right-1 text-[10px] text-right text-white leading-tight">
             <div>Round: {player.roundPoints ?? 0}</div>
