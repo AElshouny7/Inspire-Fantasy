@@ -1,6 +1,5 @@
 // components/PlayerCard.jsx
 import teamLogo from "@/assets/inspire man.png";
-import ayman from "@/assets/P23 - Mohamed Ayman.jpg";
 
 export default function PlayerCard({
   player,
