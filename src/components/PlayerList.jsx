@@ -1,26 +1,27 @@
 // components/PlayerList.jsx
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
-
 import { toast } from "sonner";
-
-import { callBackend } from "@/lib/api";
 import PlayerCard from "@/components/PlayerCard";
+import { callBackend } from "@/lib/api";
+import inspireMan from "@/assets/inspire man.png"; // for loading image
 
 export default function PlayerList() {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedPlayers = location.state?.selectedPlayers || [];
   const transferIndex = location.state?.transferIndex ?? 0;
-  const mode = location.state?.mode; // 'transfer' or 'add'
+  const mode = location.state?.mode; // 'transfer' or null (add)
   const userId = localStorage.getItem("userId");
 
   const [allPlayers, setAllPlayers] = useState([]);
-  const [filter, setFilter] = useState(location.state?.filter || "all"); // ✅ Correct
+  const [filter, setFilter] = useState(location.state?.filter || "all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false); // for clicking cards
 
   useEffect(() => {
     async function fetchPlayers() {
+      setIsLoading(true);
       const res = await callBackend("viewAllPlayers");
       if (res.status === "success") {
         setAllPlayers(res.players);
@@ -28,9 +29,9 @@ export default function PlayerList() {
       } else {
         toast.error(res.message);
       }
+      setIsLoading(false);
     }
 
-    // Automatically set filter based on index
     if (transferIndex <= 3) setFilter("outfield");
     else if (transferIndex === 4) setFilter("gk");
     else setFilter("all");
@@ -52,6 +53,7 @@ export default function PlayerList() {
   const handleSelect = async (player) => {
     if (!userId || isPlayerSelected(player)) return;
 
+    setActionLoading(true);
     const outId = selectedPlayers[transferIndex]?.id;
     const inId = player.id;
 
@@ -69,7 +71,7 @@ export default function PlayerList() {
         newPlayers[transferIndex] = player;
 
         toast.dismiss(transferLoad);
-        toast.success(`Successfully transferred ${player.name} to your team!`);
+        toast.success(`Transferred ${player.name} to your team!`);
 
         navigate("/home", { state: { updatedPlayers: newPlayers } });
       } else {
@@ -94,7 +96,7 @@ export default function PlayerList() {
         newPlayers[transferIndex] = player;
 
         toast.dismiss(addLoad);
-        toast.success(`Successfully added ${player.name} to your team!`);
+        toast.success(`Added ${player.name} to your team!`);
 
         navigate("/home", { state: { updatedPlayers: newPlayers } });
       } else {
@@ -102,20 +104,19 @@ export default function PlayerList() {
         toast.error(response.message);
       }
     }
+
+    setActionLoading(false);
   };
 
   return (
-    <div className="p-4">
+    <div className="relative p-4 min-h-screen bg-black text-white">
       <h2 className="text-xl font-bold mb-4">All Players</h2>
 
-      <div
-        className="grid grid-cols-3 gap-3"
-        style={{ justifyItems: "center" }}
-      >
+      <div className="grid grid-cols-3 gap-3 justify-items-center">
         {filteredPlayers.map((player) => (
           <PlayerCard
             key={player.id}
-            player={player} // ✅ missing before
+            player={player}
             onClick={() => handleSelect(player)}
             isSelected={isPlayerSelected(player)}
             isCaptain={false}
@@ -123,6 +124,19 @@ export default function PlayerList() {
           />
         ))}
       </div>
+
+      {(isLoading || actionLoading) && (
+        <div className="absolute inset-0 bg-black/80 z-50 flex flex-col items-center justify-center">
+          <img
+            src={inspireMan}
+            alt="Loading"
+            className="w-50 h-50 mb-4 animate-bounce"
+          />
+          <p className="text-yellow-400 text-lg font-semibold animate-pulse">
+            Loading...
+          </p>
+        </div>
+      )}
     </div>
   );
 }
