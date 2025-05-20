@@ -37,6 +37,8 @@ export default function Home() {
       setLoading(true);
       const res = await callBackend("viewMyPlayers", { userId });
       if (res.status === "success") {
+        console.log("Fetched players:", res);
+
         const { sorted, captainIndex } = sortPlayers(res.players);
         setPlayers(sorted);
         setCaptainIndex(captainIndex);
